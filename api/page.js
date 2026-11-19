@@ -4,9 +4,46 @@
 // Některé e-shopy (např. s ochranou Cloudflare) načtení blokují – appka pak
 // použije screenshot nebo vložený text.
 
+import { lookup } from 'node:dns/promises';
+import { isIP } from 'node:net';
 import { getUser, deny, fetchWithTimeout } from './_lib.js';
 
-const PRIVATE = /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|0\.|\[?::1\]?$|.*\.local$|.*\.internal$)/i;
+const PRIVATE_HOST = /^(localhost|.*\.localhost|.*\.local|.*\.internal)$/i;
+const MAX_REDIRECTS = 5;
+
+// Je IP adresa soukromá / lokální / vyhrazená? (IPv4 i IPv6)
+function isPrivateIp(ip) {
+  ip = ip.replace(/^\[|\]$/g, '').toLowerCase();
+  const m4 = ip.match(/^(?:::ffff:)?(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
+  if (m4) {
+    const [a, b] = [+m4[1], +m4[2]];
+    return a === 0 || a === 10 || a === 127 || a >= 224 ||
+      (a === 100 && b >= 64 && b <= 127) || (a === 169 && b === 254) ||
+      (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) ||
+      (a === 198 && (b === 18 || b === 19));
+  }
+  if (isIP(ip) === 6) {
+    if (ip === '::' || ip === '::1') return true;
+    if (ip.startsWith('::ffff:')) return true; // IPv4-mapped v hex tvaru
+    return /^(fc|fd|fe[89ab]|ff)/.test(ip);
+  }
+  return true; // neznámý formát = radši ne
+}
+
+// Smí server tuhle adresu načíst? Kontroluje protokol, jméno i to, kam se jméno přeloží.
+async function isAllowed(u) {
+  if (!/^https?:$/.test(u.protocol)) return false;
+  if (u.username || u.password) return false;
+  const host = u.hostname.replace(/^\[|\]$/g, '');
+  if (PRIVATE_HOST.test(host)) return false;
+  if (isIP(host)) return false; // přímé IP adresy nepouštíme vůbec
+  try {
+    const addrs = await lookup(host, { all: true });
+    return addrs.length > 0 && addrs.every((a) => !isPrivateIp(a.address));
+  } catch {
+    return false;
+  }
+}
 
 function decode(s) {
   return s
@@ -26,17 +63,25 @@ export default async function handler(req, res) {
 
   let u;
   try { u = new URL(String(req.query.url || '')); } catch { return deny(res, 400, 'Neplatný odkaz.'); }
-  if (!/^https?:$/.test(u.protocol) || PRIVATE.test(u.hostname) || /^\d+\.\d+\.\d+\.\d+$/.test(u.hostname))
-    return deny(res, 400, 'Tenhle odkaz načíst nejde.');
+  if (!(await isAllowed(u))) return deny(res, 400, 'Tenhle odkaz načíst nejde.');
 
   try {
-    const r = await fetchWithTimeout(u.toString(), {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
-        'Accept-Language': 'cs,en;q=0.8',
-      },
-      redirect: 'follow',
-    });
+    // Přesměrování procházíme ručně, aby se každá další adresa znovu zkontrolovala.
+    let r;
+    for (let hop = 0; ; hop++) {
+      r = await fetchWithTimeout(u.toString(), {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
+          'Accept-Language': 'cs,en;q=0.8',
+        },
+        redirect: 'manual',
+      });
+      if (r.status < 300 || r.status >= 400) break;
+      const loc = r.headers.get('location');
+      if (!loc || hop >= MAX_REDIRECTS) return deny(res, 502, 'E-shop stránku nevydal.');
+      u = new URL(loc, u);
+      if (!(await isAllowed(u))) return deny(res, 400, 'Tenhle odkaz načíst nejde.');
+    }
     if (!r.ok) return deny(res, 502, 'E-shop stránku nevydal.');
     let html = await r.text();
     if (html.length > 3_000_000) html = html.slice(0, 3_000_000);

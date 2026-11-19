@@ -30,7 +30,9 @@ export default async function handler(req, res) {
     if (allowed === false)
       return deny(res, 429, `Dnešní limit AI (${LIMIT}×) je vyčerpaný. Zítra zase.`);
   } else {
+    // Když limit nejde ověřit, dotaz raději odmítni (jinak by se dal obejít).
     console.error('ai_use failed', await lr.text());
+    return deny(res, 503, 'AI je teď nedostupná, zkus to za chvíli.');
   }
 
   const content = [
