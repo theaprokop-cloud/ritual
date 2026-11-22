@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Zásady ochrany osobních údajů · Rituál</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;1,400&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:Inter,system-ui,sans-serif;color:#111;background:#fff;line-height:1.55;font-size:15px}
+main{max-width:640px;margin:0 auto;padding:32px 22px 60px}
+h1,h2{font-family:'EB Garamond',Georgia,serif;font-weight:400}
+h1{font-size:38px;margin:0 0 8px}h2{font-size:24px;margin:28px 0 8px}
+.draft{background:#FBF3E6;color:#7a4b08;padding:12px 16px;border-radius:12px;font-size:13px;margin:16px 0 24px}
+.todo{background:#FFF4C2;padding:0 4px}
+</style>
+</head>
+<body><main>
+<a href="./" style="color:#111">← zpět do appky</a>
+<h1>Zásady ochrany <em>osobních údajů</em></h1>
+<div class="draft"><b>PRACOVNÍ NÁVRH – NEPUBLIKOVAT BEZ KONTROLY.</b> Tato stránka je jen kostra. Před pozváním prvních lidí ji musí doplnit a zkontrolovat někdo, kdo se vyzná v GDPR. Žlutě označená místa je potřeba vyplnit.</div>
+
+<h2>Kdo údaje zpracovává</h2>
+<p>Správce: <span class="todo">[jméno / firma, IČO, adresa, kontaktní e-mail]</span>.</p>
+
+<h2>Jaké údaje zpracováváme</h2>
+<ul>
+<li>Účet: e-mail a heslo (heslo je uložené šifrovaně).</li>
+<li>Profil: jméno, pohlaví, typ pleti, problémy pleti, 3 beauty slova, poloha pro UV (město).</li>
+<li>Produkty a procedury, které si zapíšeš, včetně fotek obalů.</li>
+<li>Deník pleti: stav pleti, selfie, spánek, stres, strava, aktivita, léky a doplňky, poznámky.</li>
+<li><b>Zvláštní kategorie (údaje o zdraví):</b> selfie a stav pleti, alergie a citlivosti, léky, menstruační cyklus. Zpracováváme je jen na základě tvého výslovného souhlasu.</li>
+</ul>
+
+<h2>Proč a na jakém právním základě</h2>
+<p><span class="todo">[účel: poskytování funkcí appky; právní základ: souhlas (čl. 9 odst. 2 písm. a) GDPR) pro údaje o zdraví, plnění smlouvy pro účet…]</span></p>
+
+<h2>Kdo další k údajům přistupuje</h2>
+<ul>
+<li>Supabase – databáze a přihlášení, servery v EU <span class="todo">[ověřit region projektu]</span>.</li>
+<li>Vercel – hosting appky <span class="todo">[region, smlouva o zpracování]</span>.</li>
+<li>Anthropic (Claude API) – jen když použiješ funkce s AI (čtení obalu, diagnostika selfie, analýza rutiny). Posílá se jen obsah daného dotazu. <span class="todo">[ověřit aktuální podmínky uchovávání dat API a předání mimo EU]</span></li>
+<li>Open Beauty Facts – při skenování čárového kódu se odešle jen číslo kódu.</li>
+<li>Open-Meteo – pro UV index se odešlou jen souřadnice zvoleného města.</li>
+</ul>
+
+<h2>Jak dlouho údaje uchováváme</h2>
+<p><span class="todo">[např. po dobu existence účtu; po smazání účtu se data smažou okamžitě, zálohy do X dní]</span></p>
+
+<h2>Tvoje práva</h2>
+<p>Máš právo na přístup, opravu, výmaz, přenositelnost a odvolání souhlasu. Účet a všechna data smažeš sama v appce: Profil → Smazat účet. Zálohu dat stáhneš přes Profil → Zkopírovat zálohu. Stížnost můžeš podat u Úřadu pro ochranu osobních údajů (uoou.cz).</p>
+
+<h2>Upozornění</h2>
+<p>Rituál dává orientační kosmetická doporučení. Nejde o zdravotnický prostředek a nenahrazuje dermatologa ani alergologické vyšetření.</p>
+
+<p style="color:#7D7973;font-size:13px;margin-top:32px">Poslední úprava: <span class="todo">[datum]</span></p>
+</main></body>
+</html>

@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F6F3EE">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Rituál — skincare deník</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script>window.__URL_TYPE=(location.hash.match(/type=([a-z_]+)/)||[])[1]||"";</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<style>
+:root{--bg:#FFFFFF;--paper:#F7F6F2;--ink:#111111;--ink2:#3E3B38;--muted:#7D7973;--line:#E6E4DF;--chip:#ECEBE6;--accent:#7A1F2B;--accent-soft:#F3ECE8;--good:#2F6B47;--warn:#9A5F0E;--bad:#A3261B;--serif:'EB Garamond',Garamond,Georgia,serif;--sans:'Inter',system-ui,-apple-system,sans-serif}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+#app{max-width:560px;margin:0 auto;min-height:100vh;padding:calc(env(safe-area-inset-top) + 14px) 22px calc(env(safe-area-inset-bottom) + 104px)}
+header.top{display:flex;justify-content:space-between;align-items:center;padding:4px 0 6px}
+.brand{font-family:var(--serif);font-size:34px;font-weight:500;letter-spacing:-.02em;line-height:1}
+.toplinks{display:flex;gap:18px;font-size:14px}
+.toplinks button{background:none;border:0;padding:0}
+.masthead{text-align:center;margin:26px 0 30px}
+.kicker{font-size:14px;font-weight:600;letter-spacing:0;color:var(--ink)}
+h1{font-family:var(--serif);font-weight:400;font-size:38px;line-height:1.08;margin:8px 0 0;letter-spacing:-.01em}
+h1 em,h2 em,h3 em,.hero em{font-style:italic}
+h2{font-family:var(--serif);font-weight:400;font-size:28px;margin:0 0 6px;line-height:1.1}
+h3{font-family:var(--serif);font-size:25px;font-weight:400;margin:0 0 14px;letter-spacing:-.005em}
+p{margin:0 0 10px}
+.muted{color:var(--muted)}.small{font-size:13.5px}.tiny{font-size:11.5px}
+.section{margin:0 0 38px}
+.card{background:var(--paper);border:0;border-radius:0;padding:18px}
+.card+.card{margin-top:12px}
+.iconbtn{background:none;border:1px solid var(--line);border-radius:999px;width:40px;height:40px;display:grid;place-items:center}
+.iconbtn svg{width:18px;height:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid #CFCCC6;background:#fff;color:var(--ink);border-radius:999px;padding:11px 28px;font-size:15px;font-weight:400}
+.btn.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.ghost{background:#fff}
+.btn.block{width:100%}
+.btn.sm{padding:8px 18px;font-size:14px}
+.btn[disabled]{opacity:.45}
+.btn.danger{color:var(--bad);border-color:#E3C2BE}
+.link{background:none;border:0;padding:0;text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px;font-size:14px;color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid transparent;background:var(--chip);border-radius:999px;padding:9px 16px;font-size:14px;line-height:1}
+.chip.on{border-color:var(--ink);background:#E3E2DC}
+.seg{display:flex;gap:8px}
+.seg button{flex:1;border:1.5px solid transparent;background:var(--chip);border-radius:999px;padding:10px 0;font-size:14px}
+.seg button.on{border-color:var(--ink);background:#E3E2DC}
+.row{display:flex;gap:14px;align-items:center;padding:15px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .grow{flex:1;min-width:0}
+.row .title{font-family:var(--serif);font-size:19px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .sub{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chk{flex:none;width:28px;height:28px;border:1.2px solid var(--ink);border-radius:50%;display:grid;place-items:center;background:transparent;padding:0}
+.chk svg{width:14px;height:14px;opacity:0}
+.chk.done{background:var(--ink)}.chk.done svg{opacity:1}
+.row.isdone .title{text-decoration:line-through;color:var(--muted)}
+.num{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--muted);width:16px;flex:none;text-align:center}
+.thumb{flex:none;width:56px;height:68px;background:var(--paper);display:grid;place-items:center;overflow:hidden;font-family:var(--serif);font-style:italic;font-size:24px;color:var(--ink2)}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.tag{display:inline-block;font-size:11px;border-radius:999px;padding:2px 8px;margin:5px 4px 0 0;color:var(--ink2);background:var(--chip)}
+.tag.act{background:var(--accent-soft);color:var(--accent)}
+.status{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500}
+.status .dot{width:16px;height:16px;border-radius:50%;display:grid;place-items:center;font-size:10px;color:#fff;font-weight:700;flex:none}
+.st-bad{color:var(--bad)}.st-bad .dot{background:var(--bad)}
+.st-warn{color:var(--warn)}.st-warn .dot{background:var(--warn)}
+.st-good{color:var(--good)}.st-good .dot{background:var(--good)}
+.alert{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+.alert:last-child{border-bottom:0}
+.alert .ic{flex:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:11px;font-weight:700;margin-top:1px}
+.alert.bad .ic{background:var(--bad)}.alert.warn .ic{background:var(--warn)}.alert.info .ic{background:var(--ink2)}.alert.good .ic{background:var(--good)}
+.alert b{font-weight:600}
+.uv{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.uv>div{padding:18px;background:var(--paper)}
+.uv .big{font-family:var(--serif);font-size:60px;line-height:.9}
+.uv .lab{font-size:13px;color:var(--muted);margin-top:8px}
+.uv .spf{font-size:14px;margin-top:4px}
+.uv .spf b{font-weight:600}
+.guide{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.guide span{font-size:12px;padding:5px 11px;border-radius:999px;background:var(--chip);color:var(--muted)}
+.guide span.on{background:var(--ink);color:#fff}
+.empty{text-align:center;padding:30px 10px;color:var(--muted);background:var(--paper)}
+.empty .serif{font-family:var(--serif);font-size:24px;color:var(--ink);margin-bottom:6px}
+.lbl{display:block;font-size:13px;font-weight:600;color:var(--ink);margin:18px 0 7px}
+input[type=text],input[type=email],input[type=password],input[type=number],input[type=date],input[type=search],select,textarea{width:100%;font:inherit;font-size:16px;border:1px solid var(--line);background:#fff;border-radius:0;padding:11px 12px;color:var(--ink);-webkit-appearance:none;appearance:none}
+input[type=search]{background:var(--chip);border:0;border-radius:999px;padding:11px 18px}
+textarea{min-height:84px;resize:vertical}
+select{background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(135deg,var(--ink) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:34px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hidden{display:none!important}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid var(--line);z-index:20;padding:6px 0 calc(env(safe-area-inset-bottom) + 6px)}
+nav.tabs .inner{display:flex;max-width:560px;margin:0 auto}
+nav.tabs button{flex:1;background:none;border:0;font-size:12px;color:var(--muted);padding:8px 0;display:flex;flex-direction:column;align-items:center;gap:5px}
+nav.tabs button svg{width:20px;height:20px}
+nav.tabs button.on{color:var(--ink);font-weight:600}
+.fab{position:fixed;right:max(22px,calc(50% - 258px));bottom:calc(env(safe-area-inset-bottom) + 82px);width:56px;height:56px;border-radius:50%;background:var(--ink);color:#fff;border:0;display:grid;place-items:center;box-shadow:0 6px 20px rgba(0,0,0,.16);z-index:19}
+.fab svg{width:22px;height:22px}
+.sheet{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet-bg{position:absolute;inset:0;background:rgba(17,17,17,.35)}
+.sheet-panel{position:relative;width:100%;max-width:560px;max-height:92vh;overflow:auto;background:#fff;border-radius:16px 16px 0 0;padding:18px 22px calc(env(safe-area-inset-bottom) + 28px);animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;position:sticky;top:-18px;background:#fff;padding:6px 0 10px;z-index:2}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 92px);transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:13px;z-index:60;max-width:90vw;text-align:center;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.choice{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--paper);border:0;padding:18px;margin-bottom:10px;position:relative}
+.choice .t{font-family:var(--serif);font-size:20px}.choice .d{font-size:13px;color:var(--muted)}
+.choice input[type=file]{position:absolute;inset:0;opacity:0;width:100%;cursor:pointer}
+.choice svg{width:26px;height:26px;flex:none}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-3px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cond{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.cond button{border:1.5px solid transparent;background:var(--chip);border-radius:999px;padding:12px 2px;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.cond button .f{font-family:var(--serif);font-size:22px;line-height:1}
+.cond button.on{border-color:var(--ink);background:#E3E2DC}
+.stepper{display:flex;align-items:center;gap:12px}
+.stepper button{width:40px;height:40px;border-radius:50%;border:1px solid #CFCCC6;background:#fff;font-size:18px}
+.stepper .v{font-family:var(--serif);font-size:32px;min-width:80px;text-align:center}
+.selfie{position:relative;overflow:hidden;background:var(--paper)}
+.selfie img{width:100%;display:block;max-height:420px;object-fit:cover}
+.ai{background:var(--paper);padding:20px}
+.ai .k{font-size:14px;font-weight:600;margin-bottom:10px}
+.ai p:first-of-type{font-family:var(--serif);font-size:20px;line-height:1.3}
+.ai .kicker{margin-top:12px}
+.ai ul{margin:6px 0 12px;padding-left:18px}.ai li{margin-bottom:5px}
+.scores{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:14px 0}
+.score .n{font-family:var(--serif);font-size:28px}
+.score .b{height:4px;background:#E3E1DB;border-radius:2px;overflow:hidden;margin-top:4px}
+.score .b i{display:block;height:100%;background:var(--ink);border-radius:2px}
+.bars .bar{display:grid;grid-template-columns:90px 1fr 44px;align-items:center;gap:10px;margin:10px 0;font-size:13.5px}
+.bars .track{height:22px;background:#fff;border-radius:11px;overflow:hidden}
+.bars .fill{height:100%;background:var(--accent);opacity:.85;border-radius:11px;min-width:4px}
+.bars .pct{text-align:right;font-variant-numeric:tabular-nums}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stats>div{padding:16px 12px;background:var(--paper);text-align:center}
+.stats .n{font-family:var(--serif);font-size:34px;line-height:1}
+.stats .l{font-size:12px;color:var(--muted);margin-top:6px}
+.photos{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.photos button{border:0;padding:0;background:none;position:relative;aspect-ratio:3/4;overflow:hidden}
+.photos img{width:100%;height:100%;object-fit:cover}
+.photos span{position:absolute;left:6px;bottom:6px;background:rgba(255,255,255,.92);font-size:11px;padding:2px 7px;border-radius:999px;color:var(--ink)}
+.chart svg{width:100%;height:auto;display:block}
+.banner{font-size:12.5px;padding:10px 14px;background:var(--paper);color:var(--ink2);margin-bottom:20px;border-radius:999px;text-align:center}
+.hero{font-family:var(--serif);font-size:30px;line-height:1.12;margin:0 0 6px}
+.daylist .row{cursor:pointer}
+.loading{display:grid;place-items:center;min-height:60vh;color:var(--muted);text-align:center}
+.loading .serif{font-family:var(--serif);font-size:44px;color:var(--ink)}
+.pill-active{font-size:12px;margin-top:4px}
+.issue{padding:2px 0;border-bottom:1px solid var(--line)}
+.issue:last-child{border-bottom:0}
+.issue .when{font-size:12px;color:var(--muted);margin-top:4px}
+.center{text-align:center}
+#ob{position:fixed;inset:0;background:#fff;z-index:70;overflow:auto;-webkit-overflow-scrolling:touch}
+#ob .in{max-width:520px;min-height:100%;margin:0 auto;padding:calc(env(safe-area-inset-top) + 18px) 24px calc(env(safe-area-inset-bottom) + 28px);display:flex;flex-direction:column}
+#ob .top{display:flex;justify-content:space-between;align-items:center}
+#ob .body{flex:1;padding:28px 0 20px}
+#ob .welcome{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;padding:40px 0}
+#ob .welcome h1{font-size:54px;line-height:1.02;margin:0 0 22px}
+#ob .welcome .lead{font-family:var(--serif);font-size:21px;line-height:1.35;color:var(--ink2);max-width:360px;margin:0 auto 30px}
+#ob .feat{display:flex;flex-direction:column;gap:10px;align-items:center;margin-bottom:8px}
+#ob .feat span{font-size:13px;color:var(--muted)}
+#ob .foot{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.sheet{z-index:90}.toast{z-index:95}
+#auth{position:fixed;inset:0;background:#fff;z-index:80;overflow:auto}
+#auth .in{max-width:440px;min-height:100%;margin:0 auto;padding:calc(env(safe-area-inset-top) + 18px) 24px calc(env(safe-area-inset-bottom) + 28px);display:flex;flex-direction:column}
+#auth .mid{flex:1;display:flex;flex-direction:column;justify-content:center}
+#auth input{margin-bottom:10px}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);border-left:1px solid var(--line);margin:0 -22px}
+.ptile{border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:#fff;padding:0;text-align:left;position:relative;display:flex;flex-direction:column}
+.ptile .im{aspect-ratio:4/5;display:grid;place-items:center;overflow:hidden;background:#fff}
+.ptile .im img{width:100%;height:100%;object-fit:contain}
+.ptile .im .ph{font-family:var(--serif);font-style:italic;font-size:34px;color:#C9C5BE}
+.ptile .cap{border-top:1px solid var(--line);padding:8px 10px 10px}
+.ptile .br{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ptile .nm{font-family:var(--serif);font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ptile .flag{position:absolute;top:8px;left:8px;font-size:10px;padding:3px 8px;border-radius:999px;background:#fff;border:1px solid var(--line)}
+.ptile .flag.bad{color:var(--bad);border-color:#E3C2BE}.ptile .flag.warn{color:var(--warn);border-color:#E8D5B5}
+.photo-big{background:#fff;border:1px solid var(--line);aspect-ratio:4/5;max-width:240px;margin:0 auto 10px;display:grid;place-items:center;overflow:hidden}
+.photo-big img{width:100%;height:100%;object-fit:contain}
+.unverified{font-size:12px;color:var(--warn);background:#FBF3E6;padding:8px 12px;border-radius:12px;margin-top:8px}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <div class="brand">rituál</div>
+    <div class="toplinks"><button data-act="goto" data-tab="produkty">produkty</button><button data-act="goto" data-tab="profil">profil</button></div>
+  </header>
+  <div class="masthead"><div class="kicker" id="hdrKicker"></div><h1 id="hdrTitle">rituál</h1></div>
+  <main id="view"><div class="loading"><div><div class="serif">rituál</div><div class="small">Načítám tvoji rutinu…</div></div></div></main>
+</div>
+<button class="fab hidden" id="fab" data-act="addProduct" aria-label="Přidat produkt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg></button>
+<nav class="tabs"><div class="inner">
+  <button data-act="goto" data-tab="dnes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Dnes</button>
+  <button data-act="goto" data-tab="produkty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="8" y="7" width="8" height="14" rx="1.5"/><path d="M10 7V4h4v3M8 12h8"/></svg>Produkty</button>
+  <button data-act="goto" data-tab="plet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3c4.4 0 7 3.4 7 8 0 5-3.4 10-7 10s-7-5-7-10c0-4.6 2.6-8 7-8z"/><path d="M9.5 14.5c1.4 1 3.6 1 5 0"/><circle cx="9.5" cy="10.5" r=".6" fill="currentColor"/><circle cx="14.5" cy="10.5" r=".6" fill="currentColor"/></svg>Deník</button>
+  <button data-act="goto" data-tab="prehled"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Přehled</button>
+</div></nav>
+<div class="sheet hidden" id="sheet"><div class="sheet-bg" data-act="closeSheet"></div><div class="sheet-panel"><div class="sheet-head"><h2 id="sheetTitle"></h2><button class="iconbtn" data-act="closeSheet" aria-label="Zavřít"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div id="sheetBody"></div></div></div>
+<div id="auth" class="hidden"></div>
+<div id="ob" class="hidden"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ utils ============ */
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parseYmd=s=>{const[y,m,d]=String(s).split('-').map(Number);return new Date(y,m-1,d);};
+const todayStr=()=>ymd(new Date());
+const addDays=(s,n)=>{const d=parseYmd(s);d.setDate(d.getDate()+n);return ymd(d);};
+const diffDays=(a,b)=>Math.round((parseYmd(a)-parseYmd(b))/864e5);
+const wdIdx=s=>(parseYmd(s).getDay()+6)%7;
+const WD=['Po','Út','St','Čt','Pá','So','Ne'];
+const fmtLong=s=>parseYmd(s).toLocaleDateString('cs-CZ',{weekday:'long',day:'numeric',month:'long'});
+const fmtShort=s=>parseYmd(s).toLocaleDateString('cs-CZ',{day:'numeric',month:'numeric'});
+const fmtMed=s=>parseYmd(s).toLocaleDateString('cs-CZ',{day:'numeric',month:'long',year:'numeric'});
+const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+const clone=o=>JSON.parse(JSON.stringify(o));
+const nf=(n,d=1)=>Number(n).toLocaleString('cs-CZ',{maximumFractionDigits:d,minimumFractionDigits:0});
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),2600);}
+const withTimeout=(p,ms)=>Promise.race([p,new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),ms))]);
+function loadScript(src){return new Promise((res,rej)=>{if(document.querySelector('script[src="'+src+'"]'))return res();const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+
+/* ============ domain data ============ */
+const CATS=[['odlicovac','Odličovač'],['cistic','Čisticí přípravek'],['tonikum','Tonikum'],['esence','Esence'],['peeling','Exfoliant / peeling'],['serum','Sérum'],['treatment','Lokální péče'],['ocni','Oční krém'],['krem','Krém'],['olej','Pleťový olej'],['maska','Maska'],['pristroj','Přístroj (LED, red light, gua sha…)'],['spf','SPF'],['rty','Péče o rty'],['jine','Jiné']];
+const CATNAME=Object.fromEntries(CATS);const CATORD=Object.fromEntries(CATS.map((c,i)=>[c[0],i]));
+const ACTIVES={
+ retinoid:{l:'Retinoid',g:'strong',k:['retinol','retinal','retinaldehyde','retinyl','tretinoin','adapalene','tazarotene','hydroxypinacolone retinoate','granactive']},
+ aha:{l:'AHA',g:'strong',k:['glycolic acid','lactic acid','mandelic acid','malic acid','tartaric acid']},
+ bha:{l:'BHA',x:['ethylhexyl salicylate','benzyl salicylate','homosalate','octisalate','butyloctyl salicylate'],g:'strong',k:['salicylic acid','betaine salicylate','willow bark','salix alba bark']},
+ pha:{l:'PHA',g:'strong',k:['gluconolactone','lactobionic acid']},
+ enzymes:{l:'Enzymy',g:'strong',k:['papain','bromelain','subtilisin']},
+ vitc:{l:'Vitamin C',g:'strong',k:['ascorbic acid','ascorbyl','ascorbate']},
+ bpo:{l:'Benzoyl peroxid',g:'strong',k:['benzoyl peroxide']},
+ azelaic:{l:'Kys. azelaová',g:'strong',k:['azelaic acid','azeloyl']},
+ niacinamide:{l:'Niacinamid',g:'calm',k:['niacinamide']},
+ copper:{l:'Měďnaté peptidy',g:'anti',k:['copper tripeptide','copper peptide','ghk-cu','copper gluconate']},
+ peptides:{l:'Peptidy',g:'anti',k:['peptide','palmitoyl','matrixyl','argireline']},
+ tranexamic:{l:'Kys. tranexamová',g:'pig',k:['tranexamic']},
+ bakuchiol:{l:'Bakuchiol',g:'strong',k:['bakuchiol']},
+ hyaluronic:{l:'Hyaluron',g:'hydra',k:['hyaluronic','hyaluronate']},
+ ceramides:{l:'Ceramidy',g:'barrier',k:['ceramide']},
+ centella:{l:'Centella',g:'calm',k:['centella','madecassoside','asiaticoside']},
+ panthenol:{l:'Panthenol (B5)',g:'calm',k:['panthenol']},
+ allantoin:{l:'Allantoin',g:'calm',k:['allantoin']},
+ bisabolol:{l:'Bisabolol',g:'calm',k:['bisabolol']},
+ licorice:{l:'Lékořice',g:'calm',k:['glycyrrhiza','glycyrrhetinic','dipotassium glycyrrhizate']},
+ oat:{l:'Oves',g:'calm',k:['avena sativa','avenanthramide']},
+ ectoin:{l:'Ektoin',g:'calm',k:['ectoin']},
+ thermal:{l:'Termální voda',g:'calm',k:['thermal water','spring water','eau thermale','aqua thermalis']},
+ betaglucan:{l:'Beta-glukan',g:'calm',k:['beta-glucan','beta glucan']},
+ sugars:{l:'Zklidňující cukry (rhamnóza, xylitol…)',g:'calm',k:['rhamnose','xylitol','mannitol','fructooligosaccharides']},
+ cucumber:{l:'Okurka',g:'calm',k:['cucumis sativus']},
+ squalane:{l:'Skvalan',g:'barrier',k:['squalane']},
+ lipids:{l:'Cholesterol a mastné kyseliny',g:'barrier',k:['cholesterol','phytosphingosine','linoleic acid']},
+ urea:{l:'Urea',g:'hydra',k:['urea'],x:['imidazolidinyl','diazolidinyl','hydantoin']},
+ pga:{l:'Kys. polyglutamová',g:'hydra',k:['polyglutamic']},
+ vite:{l:'Vitamin E',g:'anti',k:['tocopherol']},
+ ferulic:{l:'Kys. ferulová',g:'anti',k:['ferulic']},
+ resveratrol:{l:'Resveratrol',g:'anti',k:['resveratrol']},
+ arbutin:{l:'Arbutin',g:'pig',k:['arbutin']},
+ kojic:{l:'Kys. kojová',g:'pig',k:['kojic']},
+ zinc:{l:'Zinek (PCA)',g:'sebum',k:['zinc pca','zinc gluconate']},
+ spf:{l:'UV filtry',g:'other',k:['zinc oxide','titanium dioxide','avobenzone','butyl methoxydibenzoylmethane','octocrylene','homosalate','ethylhexyl salicylate','octisalate','bis-ethylhexyloxyphenol','tinosorb','uvinul','ethylhexyl methoxycinnamate','octinoxate','diethylamino hydroxybenzoyl','ethylhexyl triazone','drometrizole','methylene bis-benzotriazolyl','terephthalylidene','mexoryl']},
+ fragrance:{l:'Parfemace',g:'other',k:['parfum','fragrance']},
+ alcohol:{l:'Alkohol',x:[],g:'other',k:['alcohol denat']}
+};
+const AGROUPS=[['strong','Účinné látky'],['calm','Zklidnění'],['barrier','Bariéra'],['hydra','Hydratace'],['pig','Pigmentace'],['anti','Antioxidanty a anti-age'],['sebum','Maz'],['other','Ostatní']];
+const EXFOL=['aha','bha','pha','enzymes'];
+const STRONG=['retinoid','aha','bha','pha','enzymes','bpo','vitc'];
+const CONCERNS={akne:'Pupínky / akné',tecky:'Černé tečky',zarudnuti:'Zarudnutí',suchost:'Suchost',mastnota:'Mastnota',citlivost:'Citlivost / pálení',pigment:'Pigmentace',vrasky:'Vrásky',linky:'Jemné linky',pory:'Rozšířené póry',textura:'Nerovná textura',matnost:'Matnost',kruhy:'Tmavé kruhy',otoky:'Otoky'};
+const COND=[[5,'Skvělá','✦'],[4,'Dobrá','◕'],[3,'OK','◑'],[2,'Nic moc','◔'],[1,'Hrozná','○']];
+const CONDNAME={5:'Skvělá',4:'Dobrá',3:'Neutrální',2:'Nic moc',1:'Hrozná'};
+const FOOD={cukr:'Cukr',mlecne:'Mléčné',alkohol:'Alkohol',kofein:'Hodně kávy',fastfood:'Fast food',zelenina:'Hodně zeleniny',voda:'Dost vody',protein:'Protein',vlaknina:'Vláknina',suplementy:'Suplementy',sacharidy:'Rychlé sacharidy',sul:'Hodně soli',palive:'Pálivé',horke:'Horké nápoje',smazene:'Smažené / mastné',ryby:'Ryby / omega-3',ovoce:'Ovoce',fermentovane:'Fermentované',cokolada:'Čokoláda',lepek:'Lepek'};
+const ACTIV={cviceni:'Cvičení',sauna:'Sauna',bazen:'Bazén',venku:'Hodně venku',poceni:'Pocení',nemoc:'Nemoc',sex:'Sex',otuzovani:'Otužování',masaz:'Masáž',procedura:'Kosmetická procedura'};
+const ENV={topeni:'Topení / suchý vzduch',mraz:'Mráz / vítr',slunce:'Slunce',makeup:'Make-up celý den',novy:'Nový produkt',cesta:'Cestování / let'};
+const SKINTYPE={sucha:'Suchá',mastna:'Mastná',smisena:'Smíšená',normalni:'Normální'};
+const SENS={nizka:'Nízká',stredni:'Střední',vysoka:'Vysoká'};
+const WORDS=['minimalistická','rychlá','rituál','glow','clean','vědecká','K-beauty','luxusní','přírodní','efektivní','experimentální','relaxační','jemná','vrstvená','sezónní','cílená'];
+const QUIZ=[
+ ['Kolik času ráno pleti věnuješ?',[['Do 3 minut, rychle a hotovo',['rychlá','minimalistická']],['5–10 minut, ale efektivně',['efektivní','cílená']],['Klidně 20 minut, je to můj čas',['rituál','relaxační']]]],
+ ['Podle čeho vybíráš produkty?',[['Účinné látky a studie',['vědecká','cílená']],['Krátké, čisté složení',['clean','přírodní']],['Textura, vůně, krásný obal',['luxusní','relaxační']],['Novinky a trendy z Koreje',['K-beauty','experimentální']]]],
+ ['Co chceš vidět v zrcadle?',[['Zářivou, odpočatou pleť',['glow','jemná']],['Klidnou a zdravou pleť',['jemná','clean']],['Konkrétní změnu: pigment, vrásky, pupínky',['cílená','vědecká']],['Hlavně dobrý pocit ze sebe',['relaxační','glow']]]],
+ ['Kolik produktů máš v koupelně?',[['3–4, víc nepotřebuju',['minimalistická','efektivní']],['Tak 5–8 osvědčených',['efektivní','rituál']],['Víc, ráda vrstvím',['vrstvená','K-beauty']],['Pořád zkouším nové',['experimentální','glow']]]],
+ ['Mění se tvoje rutina během roku?',[['Ano, podle sezóny',['sezónní','vrstvená']],['Podle toho, jak se pleť zrovna cítí',['jemná','cílená']],['Držím se osvědčeného',['rituál','minimalistická']]]],
+ ['Péče o pleť je pro tebe…',[['Nutnost, jako čištění zubů',['rychlá','efektivní']],['Chvíle jen pro sebe',['rituál','relaxační']],['Malý každodenní luxus',['luxusní','glow']],['Hra a objevování',['experimentální','K-beauty']]]]
+];
+let Q=null,wordsEdit=false,pOtherOpen=false,alertsAll=false,journalMore=false,OB=null;
+function quizRender(){if(!Q)return;
+  if(Q.i<QUIZ.length){const [q,opts]=QUIZ[Q.i];openSheet('Najdi svá 3 slova','<div class="tiny muted" style="margin-bottom:10px">Otázka '+(Q.i+1)+' z '+QUIZ.length+'</div><div style="height:3px;background:var(--chip);border-radius:2px;margin-bottom:22px"><div style="height:100%;width:'+(Q.i/QUIZ.length*100)+'%;background:var(--ink);border-radius:2px"></div></div><p class="hero" style="font-size:28px;margin-bottom:18px">'+esc(q)+'</p>'+opts.map((o,j)=>'<button class="choice" data-act="quizAns" data-j="'+j+'"><div class="t" style="font-size:18px">'+esc(o[0])+'</div></button>').join('')+(Q.i?'<button class="link" data-act="quizBack" style="margin-top:6px">Zpět</button>':''));return;}
+  const sc={};Q.ans.forEach((j,i)=>{const w=QUIZ[i][1][j][1];sc[w[0]]=(sc[w[0]]||0)+2;sc[w[1]]=(sc[w[1]]||0)+1;});
+  const top=Object.entries(sc).sort((a,b)=>b[1]-a[1]||WORDS.indexOf(a[0])-WORDS.indexOf(b[0])).slice(0,3).map(x=>x[0]);Q.top=top;
+  openSheet('Tvoje 3 slova','<p class="small muted">Tvoji beauty rutinu nejlépe vystihuje:</p><div class="chips" style="margin:16px 0 24px">'+top.map(w=>'<span class="chip on" style="font-size:16px;padding:12px 20px">'+esc(w)+'</span>').join('')+'</div><button class="btn dark block" data-act="quizUse">Použít tato slova</button><button class="btn block" style="margin-top:10px" data-act="quizStart">Zkusit znovu</button>');}
+const TREAT={peeling:['Chemický peeling',7],laser:['Laser',7],dermapen:['Mikrojehličky / dermapen',5],hydrafacial:['Hydrafacial',2],osetreni:['Kosmetické ošetření / čištění',2],mikroderm:['Mikrodermabraze',3],rf:['Radiofrekvence',2],mezo:['Skinbooster / mezoterapie',3],botox:['Botox',1],filler:['Výplně / filler',2],led:['LED terapie',0],masaz:['Masáž obličeje',0],depilace:['Laserová epilace',2],rasy:['Řasy / obočí',0],jine:['Jiné',0]};
+let prodTab='home',T=null;
+const ALLERG={
+ parfem:{l:'Parfemace',k:['parfum','fragrance','aroma'],x:['aromatic','fragrance-free','fragrance free']},
+ vune:{l:'Alergeny vůní (linalool, limonen…)',k:['linalool','limonene','citronellol','geraniol','eugenol','coumarin','citral','benzyl benzoate','benzyl salicylate','cinnamal','hexyl cinnamal','farnesol','isoeugenol','hydroxycitronellal','benzyl cinnamate','amyl cinnamal']},
+ eoleje:{l:'Esenciální oleje',k:['essential oil','leaf oil','peel oil','flower oil','tea tree','melaleuca','lavandula angustifolia oil','mentha piperita','eucalyptus','citrus aurantium']},
+ mi:{l:'Methylisothiazolinon (MI/MCI)',k:['methylisothiazolinone','methylchloroisothiazolinone']},
+ parabeny:{l:'Parabeny',k:['paraben']},
+ formald:{l:'Uvolňovače formaldehydu',k:['dmdm hydantoin','imidazolidinyl urea','diazolidinyl urea','quaternium-15','bronopol','bromo-2-nitropropane','sodium hydroxymethylglycinate','formaldehyde']},
+ lanolin:{l:'Lanolin',k:['lanolin','wool alcohol']},
+ propolis:{l:'Propolis / včelí produkty',k:['propolis','royal jelly']},
+ alkohol:{l:'Alkohol (denat.)',k:['alcohol denat']},
+ chemuv:{l:'Chemické UV filtry',k:['benzophenone','oxybenzone','octinoxate','ethylhexyl methoxycinnamate','avobenzone','butyl methoxydibenzoylmethane','octocrylene','homosalate']},
+ salicyl:{l:'Salicyláty (alergie na aspirin)',k:['salicylic acid','salicylate']},
+ cocamido:{l:'Cocamidopropyl betaine',k:['cocamidopropyl betaine']},
+ sulfaty:{l:'Sulfáty (SLS/SLES)',k:['sodium lauryl sulfate','sodium laureth sulfate']},
+ orechy:{l:'Ořechové oleje',k:['prunus amygdalus dulcis','sweet almond','juglans','macadamia','corylus avellana','argania spinosa']}
+};
+function allergyKeys(){const out=[];(S.profile.allergies||[]).forEach(k=>{if(ALLERG[k])out.push({l:ALLERG[k].l,k:ALLERG[k].k,x:ALLERG[k].x});});String(S.profile.allergyText||'').split(',').map(x=>x.trim().toLowerCase()).filter(x=>x.length>=3).forEach(x=>out.push({l:x,k:[x]}));return out;}
+function allergyHits(p){const items=inciItems(p.ingredients);if(!items.length)return[];return allergyKeys().filter(a=>inciHas(items,a)).map(a=>a.l);}
+const allergyText=()=>allergyKeys().map(a=>a.l).join(', ');
+const GENDER={zena:'Žena',muz:'Muž',jine:'Jiné',neuvadim:'Neuvádět'};
+const PHASES={
+ menstruace:{l:'Menstruace',t:'Pleť bývá citlivější, sušší a hůř snáší silné aktivní látky. Zvol jemné čištění, víc hydratace a peeling nech na později.'},
+ folikularni:{l:'Folikulární fáze',t:'Estrogen roste a pleť je obvykle nejodolnější. Dobrá chvíle na retinoidy, kyseliny a testování nových produktů.'},
+ ovulace:{l:'Ovulace',t:'Pleť většinou září, ale může přibývat mazu. Stačí lehčí textury a pravidelné SPF.'},
+ lutealni:{l:'Luteální fáze',t:'Progesteron zvyšuje tvorbu mazu a póry se snáz ucpou. Pomůže BHA a lehčí, nekomedogenní hydratace.'},
+ pozdni:{l:'Před menstruací',t:'Typická doba hormonálních pupínků, hlavně na bradě a čelisti. Lokálně BHA nebo kyselina azelaová, nepřetěžuj pleť a nemačkej.'}
+};
+function cycleOn(){return S.profile.gender==='zena'&&S.profile.cycleOn!==false;}
+function periodStarts(){const ev=new Set(S.profile.periodStarts||[]);if(S.profile.lastPeriod)ev.add(S.profile.lastPeriod);Object.keys(S.days).forEach(d=>{if(S.days[d]&&S.days[d].period)ev.add(d);});const list=[...ev].sort();const st=[];let last=null;for(const d of list){if(last===null||diffDays(d,last)>3)st.push(d);last=d;}return st;}
+function cycleLength(){const st=periodStarts();const gaps=[];for(let i=1;i<st.length;i++){const g=diffDays(st[i],st[i-1]);if(g>=20&&g<=45)gaps.push(g);}const g=gaps.slice(-6);if(g.length)return{L:Math.round(g.reduce((a,b)=>a+b,0)/g.length),learned:true,n:g.length};return{L:Math.max(20,Math.min(45,+S.profile.cycleLen||28)),learned:false,n:0};}
+function cycleInfo(date){if(!cycleOn())return null;const {L,learned}=cycleLength();const P=Math.max(2,Math.min(10,+S.profile.periodLen||5));const st=periodStarts().filter(x=>x<=date);if(!st.length)return null;const start=st[st.length-1];const day=diffDays(date,start)+1;const late=Math.max(0,day-L);
+  if(late>21)return{day,phase:null,late,L,learned,lost:true};
+  const ov=L-14;let ph;if(day<=P)ph='menstruace';else if(day<ov-1)ph='folikularni';else if(day<=ov+1)ph='ovulace';else if(day>L-6||late)ph='pozdni';else ph='lutealni';
+  return{day,phase:ph,next:L-day+1,late,L,learned,start};}
+function addPeriodStart(d){const list=(S.profile.periodStarts||[]).filter(x=>Math.abs(diffDays(x,d))>7);if(S.profile.lastPeriod&&Math.abs(diffDays(S.profile.lastPeriod,d))<=7)S.profile.lastPeriod='';list.push(d);S.profile.periodStarts=list.sort().slice(-24);Object.keys(S.days).forEach(k=>{if(S.days[k]&&S.days[k].period&&Math.abs(diffDays(k,d))<=7){delete S.days[k].period;saveDay(k,true);}});saveProfile();}
+const CITIES={praha:['Praha',50.08,14.42],brno:['Brno',49.2,16.61],ostrava:['Ostrava',49.82,18.26],plzen:['Plzeň',49.75,13.38],cb:['Č. Budějovice',48.97,14.47],vieden:['Vídeň',48.21,16.37],milan:['Milán',45.46,9.19],pariz:['Paříž',48.86,2.35],londyn:['Londýn',51.51,-0.13],nyc:['New York',40.71,-74.01],nice:['Nice',43.7,7.27],dubaj:['Dubaj',25.2,55.27]};
+const CLOUDS={clear:['Jasno',1],partly:['Polojasno',.8],cloudy:['Oblačno',.55],overcast:['Zataženo',.3]};
+
+/* ============ state & storage ============ */
+const S={profile:{},products:{},days:{},treatments:{}};
+let mode='cloud',SB=null,USER=null,sampleFn=true,canImages=true,loadNote='',uvLive=null;
+let routineAiOpen=(()=>{try{return localStorage.getItem('ritual_raopen')!=='0';}catch(e){return true;}})(),prodView='list',tab='dnes',todaySlot=(new Date().getHours()<14?'am':'pm'),skinDate=todayStr(),range=30,prodFilter='all',prodQuery='';
+const chains={};
+function queue(key,fn){chains[key]=(chains[key]||Promise.resolve()).then(async()=>{const r=await fn();if(r&&r.error)throw r.error;}).catch(e=>{console.error(e);toast(navigator.onLine===false?'Jsi offline, změna se neuložila.':'Uložení se nepovedlo, zkus to znovu.');});return chains[key];}
+function saveLocal(){}
+const now=()=>new Date().toISOString();
+function saveProfile(){const d=clone(S.profile);queue('profile',()=>SB.from('profiles').upsert({user_id:USER.id,data:d,updated_at:now()}));}
+function saveProduct(p){S.products[p.id]=p;const d=clone(p);queue('p'+p.id,()=>SB.from('products').upsert({user_id:USER.id,id:p.id,data:d,updated_at:now()},{onConflict:'user_id,id'}));}
+function removeProduct(id){delete S.products[id];queue('p'+id,()=>SB.from('products').delete().eq('user_id',USER.id).eq('id',id));}
+function saveTreatment(x){S.treatments[x.id]=x;const d=clone(x);queue('t'+x.id,()=>SB.from('treatments').upsert({user_id:USER.id,id:x.id,data:d,updated_at:now()},{onConflict:'user_id,id'}));}
+function removeTreatment(id){delete S.treatments[id];queue('t'+id,()=>SB.from('treatments').delete().eq('user_id',USER.id).eq('id',id));}
+const dayTimers={};
+function saveDay(date,immediate){clearTimeout(dayTimers[date]);const run=()=>{const d=clone(S.days[date]);return queue('d'+date,()=>SB.from('days').upsert({user_id:USER.id,date,data:d,updated_at:now()},{onConflict:'user_id,date'}));};if(immediate)run();else dayTimers[date]=setTimeout(run,700);}
+function getDay(date){if(!S.days[date])S.days[date]={date,am:{},pm:{}};const d=S.days[date];d.am=d.am||{};d.pm=d.pm||{};return d;}
+
+async function loadCloud(){
+  const u=USER.id;const all=async q=>{const {data,error}=await q;if(error)throw error;return data||[];};
+  const [pf,ps,ds,ts]=await Promise.all([all(SB.from('profiles').select('data').eq('user_id',u)),all(SB.from('products').select('id,data').eq('user_id',u)),all(SB.from('days').select('date,data').eq('user_id',u).order('date',{ascending:false}).limit(400)),all(SB.from('treatments').select('id,data').eq('user_id',u))]);
+  S.profile=pf[0]?pf[0].data||{}:{};S.products={};ps.forEach(r=>S.products[r.id]=r.data);S.days={};ds.forEach(r=>S.days[r.date]=r.data);S.treatments={};ts.forEach(r=>S.treatments[r.id]=r.data);
+}
+/* ---------- auth ---------- */
+const AUTHERR=m=>/invalid login/i.test(m)?'Špatný e-mail nebo heslo.':/email not confirmed/i.test(m)?'E-mail ještě není potvrzený.':/rate limit|too many/i.test(m)?'Moc pokusů, zkus to za chvíli.':/password should be/i.test(m)?'Heslo musí mít aspoň 8 znaků.':m;
+function showAuth(modeA,msg){const el=$('#auth');el.classList.remove('hidden');document.body.style.overflow='hidden';let h='<div class="in"><div class="brand">rituál</div><div class="mid">';
+  if(modeA==='login')h+='<h2 style="font-size:38px;margin-bottom:6px">vítej <em>zpět</em></h2><p class="small muted" style="margin-bottom:20px">Přihlas se ke svému skincare deníku.</p><input type="email" id="aEmail" placeholder="E-mail" autocomplete="email"><input type="password" id="aPass" placeholder="Heslo" autocomplete="current-password"><button class="btn dark block" style="padding:15px;margin-top:6px" data-act="aLogin">Přihlásit se</button><div class="card" style="margin-top:22px"><p class="small"><b>Poprvé tady, nebo jsi zapomněla heslo?</b></p><p class="small muted">Napiš svůj e-mail do pole nahoře a pošlu ti odkaz na nastavení hesla.</p><button class="btn block" data-act="aLink">Poslat odkaz</button></div><p class="tiny muted" style="margin-top:16px">Účty vznikají na pozvánku.</p>';
+  if(modeA==='setpw')h+='<h2 style="font-size:38px;margin-bottom:6px">nastav si <em>heslo</em></h2><p class="small muted" style="margin-bottom:20px">'+esc(USER&&USER.email||'')+'</p><input type="password" id="aNew" placeholder="Nové heslo (aspoň 8 znaků)" autocomplete="new-password"><input type="password" id="aNew2" placeholder="Heslo znovu" autocomplete="new-password"><button class="btn dark block" style="padding:15px;margin-top:6px" data-act="aSetPw">Uložit a pokračovat</button>';
+  h+='<div id="aMsg" class="small" style="margin-top:14px">'+(msg?esc(msg):'')+'</div></div></div>';el.innerHTML=h;}
+function hideAuth(){$('#auth').classList.add('hidden');$('#auth').innerHTML='';document.body.style.overflow='';}
+async function api(path,opts={}){const {data:{session}}=await SB.auth.getSession();const res=await fetch(path,{...opts,headers:{'Content-Type':'application/json',Authorization:'Bearer '+(session?session.access_token:''),...(opts.headers||{})}});let j={};try{j=await res.json();}catch(e){}if(!res.ok){const e=new Error(j.error||'Server teď neodpověděl.');e.status=res.status;throw e;}return j;}
+async function fetchUV(){try{const l=loc();const t=todayStr();if(uvLive&&uvLive.date===t&&uvLive.lat===l.lat&&uvLive.lon===l.lon)return;const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+l.lat+'&longitude='+l.lon+'&hourly=uv_index&timezone=auto&forecast_days=1');if(!r.ok)return;const j=await r.json();if(j&&j.hourly&&j.hourly.uv_index){uvLive={date:t,lat:l.lat,lon:l.lon,hours:j.hourly.uv_index.map(Number)};if(tab==='dnes')render();}}catch(e){}}
+async function init(){
+  const C=window.RITUAL_CONFIG||{};
+  if(!window.supabase||!C.SUPABASE_URL||/XXXX/.test(C.SUPABASE_URL)){$('#view').innerHTML='<div class="empty"><div class="serif">Chybí konfigurace</div><div class="small">Doplň SUPABASE_URL a SUPABASE_ANON_KEY v souboru config.js.</div></div>';return;}
+  SB=window.supabase.createClient(C.SUPABASE_URL,C.SUPABASE_ANON_KEY);
+  SB.auth.onAuthStateChange((ev,session)=>{if(ev==='PASSWORD_RECOVERY'){USER=session&&session.user;showAuth('setpw');}});
+  const {data:{session}}=await SB.auth.getSession();
+  if(!session){showAuth('login');return;}
+  USER=session.user;
+  if(window.__URL_TYPE==='invite'||window.__URL_TYPE==='recovery'){showAuth('setpw');return;}
+  await startApp();
+}
+async function startApp(){
+  hideAuth();try{history.replaceState(null,'','#'+(['dnes','produkty','plet','prehled','profil'].includes(location.hash.slice(1))?location.hash.slice(1):'dnes'));}catch(e){}
+  $('#view').innerHTML='<div class="loading"><div><div class="serif">rituál</div><div class="small">Načítám tvoji rutinu…</div></div></div>';
+  try{await withTimeout(loadCloud(),15000);}catch(e){console.error(e);loadNote='Data se nepodařilo načíst. Zkontroluj připojení a obnov stránku.';render();return;}
+  fetchUV();
+  if((S.profile.actVer||1)<2){Object.values(S.products).forEach(p=>{if(p.ingredients){const add=detectActives(p.ingredients).filter(k=>!(p.actives||[]).includes(k));if(add.length){p.actives=[...(p.actives||[]),...add];saveProduct(p);}}});S.profile.actVer=2;saveProfile();}
+  if(!S.profile.onboarded&&(Object.keys(S.products).length||S.profile.name)){S.profile.onboarded=true;saveProfile();}
+  const h=location.hash.slice(1);if(['dnes','produkty','plet','prehled','profil'].includes(h))tab=h;
+  render();
+  if(!S.profile.onboarded){OB={step:-1};obRender();}
+}
+window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(['dnes','produkty','plet','prehled','profil'].includes(h)&&h!==tab){closeSheet();tab=h;render();}});
+
+/* ============ product logic ============ */
+const activeProducts=()=>Object.values(S.products).filter(p=>!p.archived);
+function inciItems(text){return String(text||'').toLowerCase().replace(/\([^)]*\)/g,m=>' '+m.slice(1,-1)+' ').split(/[,;•\n]|\.\s/).map(x=>x.replace(/\s+/g,' ').trim()).filter(Boolean);}
+function inciHas(items,v){return items.some(it=>v.k.some(w=>it.includes(w))&&!(v.x||[]).some(x=>it.includes(x)));}
+function detectActives(text){const items=inciItems(text);const out=[];for(const[k,v]of Object.entries(ACTIVES)){if(inciHas(items,v))out.push(k);}return out;}
+function actOf(p){const s=new Set(p.actives||[]);if(p.category==='spf')s.add('spf');return s;}
+function isScheduled(p,date,slot){
+  if(p.archived||!p[slot])return false;
+  const f=p.freq||{type:'daily'};
+  if(f.type==='asneeded')return false;
+  if(f.type==='days')return(f.days||[]).includes(wdIdx(date));
+  if(f.type==='interval'){const n=Math.max(1,+f.every||1);const d=diffDays(date,f.start||date);return d>=0&&d%n===0;}
+  return true;
+}
+function freqText(p){const f=p.freq||{type:'daily'};if(f.type==='asneeded')return'Podle potřeby'+(p.goal?' · cíl '+p.goal+'× týdně':'');if(f.type==='days')return(f.days||[]).length?(f.days||[]).slice().sort().map(i=>WD[i]).join(', '):'Žádné dny';if(f.type==='interval')return(+f.every||1)===1?'Denně':'Každý '+f.every+'. den';return'Denně';}
+function slotText(p){return[p.am?'Ráno':'',p.pm?'Večer':'',p.any?'Kdykoli':''].filter(Boolean).join(' + ')||'Nenaplánováno';}
+const isExtra=p=>!p.archived&&(p.any||(p.freq&&p.freq.type==='asneeded'));
+const extraDue=(p,date)=>{if(!p.any)return false;const f=p.freq||{type:'daily'};if(f.type==='asneeded')return false;const q=Object.assign({},p,{any:false,am:true});return isScheduled(q,date,'am');};
+function extraUses(p,from,to){let n=0,last=null;for(const[d,x]of Object.entries(S.days)){if(x&&x.extra&&x.extra[p.id]){if(d>=from&&d<=to)n++;if(!last||d>last)last=d;}}return{n,last};}
+function weekStart(date){return addDays(date,-wdIdx(date));}
+function scheduledFor(date,slot){return activeProducts().filter(p=>isScheduled(p,date,slot)).sort((a,b)=>(CATORD[a.category]??99)-(CATORD[b.category]??99)||(a.name||'').localeCompare(b.name||''));}
+function addMonths(s,m){const d=parseYmd(s);d.setMonth(d.getMonth()+Number(m));return ymd(d);}
+function expiryOf(p){const c=[];if(p.expiry)c.push(p.expiry);if(p.opened&&p.pao)c.push(addMonths(p.opened,p.pao));if(!c.length)return null;return c.sort()[0];}
+function expiryStatus(p){const e=expiryOf(p);if(!e)return null;const d=diffDays(e,todayStr());if(d<0)return{lvl:'bad',text:'Po expiraci',d,e};if(d<=30)return{lvl:'warn',text:'Expiruje za '+d+' '+(d===1?'den':d<5?'dny':'dní'),d,e};return{lvl:'good',text:'Do '+fmtShort(e),d,e};}
+function runoutStatus(p){if(p.low)return{lvl:'warn',text:'Dochází'};if(p.opened&&p.weeks){const end=addDays(p.opened,Math.round(p.weeks*7));const d=diffDays(end,todayStr());if(d<=10)return{lvl:'warn',text:d<0?'Asi už došel':'Dojde asi za '+d+' d',end};}return null;}
+
+/* ============ contradictions ============ */
+const trList=()=>Object.values(S.treatments).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+function aftercare(date){return trList().filter(x=>x.date&&x.date<=date&&(+x.pause||0)>0&&diffDays(date,x.date)<(+x.pause)).map(x=>({x,left:(+x.pause)-diffDays(date,x.date)}));}
+const trName=x=>(TREAT[x.type]||TREAT.jine)[0]+(x.type==='jine'&&x.custom?': '+x.custom:'');
+function analyzeSlot(prods,slot){
+  const issues=[];const has=k=>prods.filter(p=>actOf(p).has(k));
+  const any=ks=>prods.filter(p=>ks.some(k=>actOf(p).has(k)));
+  const add=(id,lvl,ps,title,text)=>{if(ps.length)issues.push({id,lvl,pids:[...new Set(ps.map(p=>p.id))].sort(),title,text,slot});};
+  const ret=has('retinoid'),ex=any(EXFOL),vc=has('vitc'),bp=has('bpo'),cu=has('copper');
+  if(ret.length&&ex.length&&!(ret.length===1&&ex.length===1&&ret[0]===ex[0]))add('ret-ex','bad',[...ret,...ex],'Retinoid + exfoliační kyseliny','Ve stejné rutině zvyšují riziko podráždění a narušení bariéry. Střídej večery, třeba kyseliny 2× týdně a retinoid v ostatní dny.');
+  if(ret.length&&bp.length)add('ret-bpo','bad',[...ret,...bp],'Retinoid + benzoyl peroxid','Benzoyl peroxid může oxidovat retinol a tretinoin (adapalen je stabilní). Dej BPO ráno a retinoid večer.');
+  if(ret.length&&vc.length)add('ret-c','warn',[...ret,...vc],'Retinoid + vitamin C','Ve stejné fázi zbytečně dráždí. Osvědčené rozdělení: vitamin C ráno, retinoid večer.');
+  if(vc.length&&bp.length)add('c-bpo','warn',[...vc,...bp],'Vitamin C + benzoyl peroxid','Benzoyl peroxid oxiduje vitamin C, takže ten ztrácí účinek.');
+  if(vc.length&&ex.length)add('c-ex','warn',[...vc,...ex],'Vitamin C + AHA/BHA','Kombinace kyselin může citlivou pleť pálit. Pokud cítíš štípání, rozděl je.');
+  if(cu.length&&(vc.length||ex.length))add('cu','warn',[...cu,...vc,...ex],'Měďnaté peptidy + kyseliny / vitamin C','Nízké pH a vitamin C oslabují měďnaté peptidy. Použij je v jiné části dne.');
+  const exTypes=new Set();ex.forEach(p=>EXFOL.forEach(k=>actOf(p).has(k)&&exTypes.add(k)));
+  if(ex.length>=2)add('multi-ex','warn',ex,'Víc exfoliantů najednou','Několik exfoliačních produktů v jedné rutině = riziko přeexfoliace. Stačí jeden.');
+  if(ret.length>=2)add('multi-ret','warn',ret,'Dva retinoidy v jedné rutině','Zbytečně dráždí, účinek se nesčítá. Ponech jeden.');
+  if(slot==='am'&&ret.length)add('ret-am','warn',ret,'Retinoid ráno','Retinoidy patří do večerní rutiny. Na světle se rozkládají a zvyšují citlivost na slunce.');
+  if(slot==='pm'){const sp=prods.filter(p=>p.category==='spf');if(sp.length)add('spf-pm','info',sp,'SPF ve večerní rutině','Večer opalovací krém nepotřebuješ. Zvaž ho přesunout do ranní rutiny.');}
+  if((S.profile.sens==='vysoka')){const fr=has('fragrance');if(fr.length)add('frag','info',fr,'Parfemace a citlivá pleť','Parfemace patří k nejčastějším dráždidlům citlivé pleti.');}
+  return issues;
+}
+function weekIssues(){
+  const t=todayStr();const map={};
+  for(let i=0;i<7;i++){const d=addDays(t,i);for(const slot of['am','pm']){analyzeSlot(slot==='pm'?[...scheduledFor(d,slot),...activeProducts().filter(p=>isExtra(p)&&extraDue(p,d))]:scheduledFor(d,slot),slot).forEach(is=>{const key=is.id+'|'+slot+'|'+is.pids.join(',');if(!map[key])map[key]={...is,days:new Set()};map[key].days.add(wdIdx(d));});}}
+  const list=Object.values(map);
+  const act=activeProducts();const sens=act.filter(p=>p.pm&&[...actOf(p)].some(k=>['retinoid','aha','bha','pha'].includes(k)));
+  const spfAm=act.some(p=>p.am&&actOf(p).has('spf'));
+  if(sens.length&&!spfAm)list.unshift({id:'no-spf',lvl:'bad',pids:sens.map(p=>p.id),title:'Chybí SPF','text':'Používáš látky, které zvyšují citlivost na slunce, ale v ranní rutině nemáš SPF. Přidej SPF 30+ i v zimě.',slot:'am',days:new Set([0,1,2,3,4,5,6])});
+  const ord={bad:0,warn:1,info:2};return list.sort((a,b)=>ord[a.lvl]-ord[b.lvl]);
+}
+function extrasOn(date){const d=S.days[date]||{};return activeProducts().filter(p=>isExtra(p)&&((d.extra||{})[p.id]||extraDue(p,date)));}
+function todayIssues(date){const ex=extrasOn(date);return['am','pm'].flatMap(s=>analyzeSlot(s==='pm'?[...scheduledFor(date,s),...ex.filter(p=>!scheduledFor(date,s).includes(p))]:scheduledFor(date,s),s));}
+const pname=id=>{const p=S.products[id];return p?(p.name||'Bez názvu'):'?';};
+
+/* ============ UV ============ */
+function cosZenith(date,lat,lon){const r=Math.PI/180;const n=date.getTime()/864e5+2440587.5-2451545.0;const L=(280.46+0.9856474*n)%360;const g=((357.528+0.9856003*n)%360)*r;const lam=(L+1.915*Math.sin(g)+0.02*Math.sin(2*g))*r;const eps=(23.439-0.0000004*n)*r;const ra=Math.atan2(Math.cos(eps)*Math.sin(lam),Math.cos(lam));const dec=Math.asin(Math.sin(eps)*Math.sin(lam));const gmst=((18.697374558+24.06570982441908*n)%24+24)%24;const ha=(gmst*15+lon)*r-ra;return Math.sin(lat*r)*Math.sin(dec)+Math.cos(lat*r)*Math.cos(dec)*Math.cos(ha);}
+function loc(){const p=S.profile;if(p.city==='vlastni'&&isFinite(+p.lat)&&isFinite(+p.lon)&&p.lat!==''&&p.lon!=='')return{name:p.cityName||'Vlastní poloha',lat:+p.lat,lon:+p.lon};const c=CITIES[p.city||'praha']||CITIES.praha;return{name:c[0],lat:c[1],lon:c[2]};}
+function uvAt(date,l,f){const c=cosZenith(date,l.lat,l.lon);return c<=0?0:12.5*Math.pow(c,2.42)*f;}
+function uvToday(){const t=todayStr();const L0=loc();if(uvLive&&uvLive.date===t&&uvLive.lat===L0.lat&&uvLive.lon===L0.lon){const hs=uvLive.hours;const base=parseYmd(t);let peak=0,pi=0,from=null,to=null;hs.forEach((u,i)=>{if(u>peak){peak=u;pi=i;}if(u>=3){if(from===null)from=i;to=i;}});const hh=new Date().getHours();const mk=i=>i===null?null:new Date(base.getTime()+i*36e5);return{cur:hs[hh]||0,peak,pt:mk(pi),from:mk(from),to:mk(to===null?null:to+1),l:L0,live:true};}const day=S.days[t]||{};const cf=1;const l=loc();const now=new Date();const cur=uvAt(now,l,cf);const base=parseYmd(t);let peak=0,pt=null,from=null,to=null;for(let m=0;m<1440;m+=10){const d=new Date(base.getTime()+m*6e4);const u=uvAt(d,l,cf);if(u>peak){peak=u;pt=d;}if(u>=3){if(!from)from=d;to=d;}}return{cur,peak,pt,from,to,l,cloud:day.cloud||'clear',snow:!!day.snow};}
+function spfFor(u){if(u<3)return{spf:'30',t:'Nízké UV. SPF 30 ráno stačí, chrání i před UVA, které projde mraky i oknem.'};if(u<6)return{spf:'30–50',t:'Střední UV. Nanes SPF a venku ho obnovuj každé 2 hodiny.'};if(u<8)return{spf:'50',t:'Vysoké UV. SPF 50, sluneční brýle, klobouk a kolem poledne stín.'};return{spf:'50+',t:'Velmi vysoké UV. SPF 50+, mezi 11. a 15. hodinou zůstaň ve stínu.'};}
+const hm=d=>d?pad(d.getHours())+':'+pad(d.getMinutes()):'';
+
+/* ============ images & AI ============ */
+function loadImg(file){return new Promise((res,rej)=>{const url=URL.createObjectURL(file);const img=new Image();img.onload=()=>res({img,url});img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('Obrázek se nepodařilo načíst.'));};img.src=url;});}
+function scaled(img,max){const s=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));const c=document.createElement('canvas');c.width=Math.round(img.naturalWidth*s);c.height=Math.round(img.naturalHeight*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);return c;}
+function cropped(img,w,h){const c=document.createElement('canvas');c.width=w;c.height=h;const r=Math.max(w/img.naturalWidth,h/img.naturalHeight);const sw=w/r,sh=h/r;c.getContext('2d').drawImage(img,(img.naturalWidth-sw)/2,(img.naturalHeight-sh)/2,sw,sh,0,0,w,h);return c;}
+function studioPhoto(img,bbox,whiten,mode){
+  const W=img.naturalWidth,H=img.naturalHeight;let x0=0,y0=0,x1=W,y1=H;
+  if(mode!=='orig'&&Array.isArray(bbox)&&bbox.length===4&&bbox.every(v=>isFinite(+v))){let[a,b,c,d]=bbox.map(Number);if(c>a&&d>b&&c<=1.01&&d<=1.01){const px=(c-a)*.06,py=(d-b)*.06;x0=Math.max(0,(a-px))*W;y0=Math.max(0,(b-py))*H;x1=Math.min(1,(c+px))*W;y1=Math.min(1,(d+py))*H;}}
+  const cw=x1-x0,ch=y1-y0;const sc=Math.min(1,700/Math.max(cw,ch));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(cw*sc));c.height=Math.max(1,Math.round(ch*sc));const ctx=c.getContext('2d');ctx.drawImage(img,x0,y0,cw,ch,0,0,c.width,c.height);
+  let ok=false;if(whiten&&mode!=='orig'&&mode!=='crop')ok=whitenBg(c);if(whiten&&!mode&&!ok)return null;
+  const out=document.createElement('canvas');out.width=400;out.height=500;const o=out.getContext('2d');o.fillStyle='#fff';o.fillRect(0,0,400,500);const m=mode==='orig'?12:34;const s2=Math.min((400-2*m)/c.width,(500-2*m)/c.height);const w=c.width*s2,h=c.height*s2;o.imageSmoothingQuality='high';o.drawImage(c,(400-w)/2,(500-h)/2,w,h);
+  return out.toDataURL('image/jpeg',.8);
+}
+function whitenBg(c){
+  const ctx=c.getContext('2d');const W=c.width,H=c.height;const id=ctx.getImageData(0,0,W,H);const d=id.data;
+  const border=[];for(let x=0;x<W;x+=2){border.push((x)*4,((H-1)*W+x)*4);}for(let y=0;y<H;y+=2){border.push((y*W)*4,(y*W+W-1)*4);}
+  const ch=k=>border.map(i=>d[i+k]).sort((a,b)=>a-b)[border.length>>1];const br=ch(0),bg=ch(1),bb=ch(2);
+  const dist=i=>Math.abs(d[i]-br)+Math.abs(d[i+1]-bg)+Math.abs(d[i+2]-bb);
+  const uniform=border.filter(i=>dist(i)<60).length/border.length;if(uniform<.6)return false;
+  const TOL=70;const mark=new Uint8Array(W*H);const st=[];
+  for(let x=0;x<W;x++){st.push(x,(H-1)*W+x);}for(let y=0;y<H;y++){st.push(y*W,y*W+W-1);}
+  while(st.length){const p=st.pop();if(mark[p])continue;const i=p*4;if(dist(i)>TOL)continue;mark[p]=1;const x=p%W,y=(p/W)|0;if(x>0)st.push(p-1);if(x<W-1)st.push(p+1);if(y>0)st.push(p-W);if(y<H-1)st.push(p+W);}
+  {let tot=0,mk=0;for(let y=Math.floor(H*.25);y<H*.75;y+=2)for(let x=Math.floor(W*.3);x<W*.7;x+=2){tot++;if(mark[y*W+x])mk++;}if(tot&&mk/tot>.18)return false;}
+  for(let p=0;p<W*H;p++){const i=p*4;if(mark[p]){d[i]=d[i+1]=d[i+2]=255;}else{const x=p%W,y=(p/W)|0;const nb=(x>0&&mark[p-1])+(x<W-1&&mark[p+1])+(y>0&&mark[p-W])+(y<H-1&&mark[p+W]);if(nb){const t=.35*nb/4+.25;d[i]+=(255-d[i])*t;d[i+1]+=(255-d[i+1])*t;d[i+2]+=(255-d[i+2])*t;}}}
+  ctx.putImageData(id,0,0);return true;
+}
+function setVariants(T,img,bbox){const white=studioPhoto(img,bbox,true);const crop=studioPhoto(img,bbox,false,'crop');const orig=studioPhoto(img,null,false,'orig');T._var={white,crop,orig};T._mode=white?'white':'crop';T.photo=T._var[T._mode];}
+function dataUrlToBlob(u){const [h,b]=String(u).split(',');const mime=(h.match(/data:([^;]+)/)||[])[1]||'image/jpeg';const bin=atob(b);const arr=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);return new Blob([arr],{type:mime});}
+const toBlob=(c,q=.85)=>new Promise(r=>c.toBlob(r,'image/jpeg',q));
+function parseLoose(t){if(t&&typeof t==='object')return t;const m=String(t||'').match(/\{[\s\S]*\}/);if(!m)throw new Error('AI vrátila nečitelnou odpověď.');return JSON.parse(m[0]);}
+function blobToB64(b){return new Promise((r,j)=>{const fr=new FileReader();fr.onload=()=>r(String(fr.result).split(',')[1]);fr.onerror=j;fr.readAsDataURL(b);});}
+async function askJSON(prompt,images){const imgs=[];for(const b of images||[])imgs.push({media_type:b.type||'image/jpeg',data:await blobToB64(b)});
+  try{const j=await api('/api/ai',{method:'POST',body:JSON.stringify({prompt,images:imgs})});return parseLoose(j.text);}
+  catch(e){if(e.status===429)throw new Error(e.message||'Dnešní limit AI je vyčerpaný.');throw e;}}
+async function decodeBarcode(file){
+  const {img,url}=await loadImg(file);
+  try{
+    if('BarcodeDetector' in window){try{const det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128']});const r=await det.detect(img);if(r&&r[0])return r[0].rawValue;}catch(e){}}
+    try{await loadScript('https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js');if(window.ZXing){const reader=new ZXing.BrowserMultiFormatReader();const c=scaled(img,1600);const r=await reader.decodeFromImageUrl(c.toDataURL('image/jpeg',.92));if(r)return r.getText();}}catch(e){}
+    if(sampleFn&&canImages){const b=await toBlob(scaled(img,1400));const v=await askJSON('Na fotce je čárový kód (EAN) kosmetického produktu. Přečti číslice pod čárovým kódem. Odpověz pouze JSON: {"ean":"číslice, nebo prázdný řetězec když nejsou čitelné"}',[b]);if(v&&v.ean)return String(v.ean).replace(/\D/g,'')||null;}
+    return null;
+  }finally{URL.revokeObjectURL(url);}
+}
+
+/* ============ render shell ============ */
+function render(){
+  $$('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  $('#fab').classList.toggle('hidden',tab!=='produkty');
+  const v=$('#view');const k=$('#hdrKicker'),h=$('#hdrTitle');
+  const titles={dnes:'dnes',produkty:prodTab==='tr'?'tvoje <em>procedury</em>':'tvoje <em>polička</em>',plet:'deník <em>pleti</em>',prehled:'co ukazují <em>data</em>',profil:'tvůj <em>profil</em>'};
+  k.textContent=tab==='dnes'?fmtLong(todayStr()):{produkty:'produkty',plet:'skin journal',prehled:'přehled',profil:'nastavení'}[tab];
+  h.innerHTML=tab==='dnes'?greeting():titles[tab];
+  const views={dnes:viewToday,produkty:viewProducts,plet:viewSkin,prehled:viewInsights,profil:viewProfile};
+  v.innerHTML=(loadNote&&tab!=='profil'?'':'')+views[tab]();
+  if(tab==='plet')mountSkin();
+}
+function greeting(){const hr=new Date().getHours();const g=hr<11?'Dobré ráno':hr<18?'Dobrý den':'Dobrý večer';const n=S.profile.name;return esc(g)+(n?', <em>'+esc(n)+'</em>.':'.');}
+function goto(t){tab=t;try{history.replaceState(null,'','#'+t);}catch(e){location.hash=t;}render();window.scrollTo(0,0);}
+
+function thumbHtml(p){const src=p.photo||p.thumb;return'<div class="thumb" style="background:#fff;border:1px solid var(--line)">'+(src?'<img alt="" style="object-fit:contain" src="'+esc(src)+'">':esc((p.brand||p.name||'?').trim().charAt(0).toUpperCase()))+'</div>';}
+function statusHtml(st){if(!st)return'';const ic=st.lvl==='good'?'✓':'!';return'<span class="status st-'+st.lvl+'"><span class="dot">'+ic+'</span>'+esc(st.text)+'</span>';}
+function alertHtml(lvl,html){const ic={bad:'!',warn:'!',info:'i',good:'✓'}[lvl];return'<div class="alert '+lvl+'"><div class="ic">'+ic+'</div><div class="small">'+html+'</div></div>';}
+const ICHECK='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+/* ============ TODAY ============ */
+function viewToday(){
+  const t=todayStr();const day=S.days[t]||{am:{},pm:{}};
+  let h='';
+  if(loadNote)h+='<div class="banner">'+esc(loadNote)+'</div>';
+  const uv=uvToday();const rec=spfFor(uv.peak);const pk=Math.round(uv.peak*10)/10;
+  // routine
+  const slot=todaySlot;const list=scheduledFor(t,slot);const done=day[slot]||{};const nDone=list.filter(p=>done[p.id]).length;
+  h+='<div class="section"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px"><h3 style="margin:0">dnešní <em>rutina</em></h3><span class="small muted">'+(list.length?nDone+' / '+list.length+' hotovo':'')+'</span></div>';
+  h+='<div class="seg" style="margin-bottom:6px"><button class="'+(slot==='am'?'on':'')+'" data-act="slot" data-v="am">Ráno</button><button class="'+(slot==='pm'?'on':'')+'" data-act="slot" data-v="pm">Večer</button></div>';
+  if(!list.length){h+='<div class="empty"><div class="serif">'+(activeProducts().length?'Na dnešní '+(slot==='am'?'ráno':'večer')+' nic':'Zatím žádné produkty')+'</div><div class="small">'+(activeProducts().length?'Podle nastavené frekvence dnes nic nevychází.':'Přidej první produkt, naskenuj kód nebo vyfoť obal.')+'</div>'+(activeProducts().length?'':'<div style="margin-top:14px"><button class="btn" data-act="addProduct">Přidat produkt</button></div>')+'</div>';}
+  else{h+='<div>'+list.map((p,i)=>{const d=!!done[p.id];const acts=[...actOf(p)].filter(k=>STRONG.includes(k)||k==='spf');return'<div class="row '+(d?'isdone':'')+'"><span class="num">'+(i+1)+'</span><button class="chk '+(d?'done':'')+'" data-act="toggleDone" data-id="'+p.id+'" aria-label="Hotovo">'+ICHECK+'</button><div class="grow" data-act="toggleDone" data-id="'+p.id+'"><div class="title">'+esc(p.name||'Bez názvu')+'</div><div class="sub">'+esc([p.brand,CATNAME[p.category]].filter(Boolean).join(' · '))+'</div>'+(acts.length?'<div>'+acts.map(k=>'<span class="tag act">'+esc(ACTIVES[k].l)+'</span>').join('')+'</div>':'')+'</div><button class="link" data-act="openProduct" data-id="'+p.id+'">Detail</button></div>';}).join('')+'</div>';
+    if(nDone<list.length)h+='<button class="btn ghost sm" style="margin-top:12px" data-act="allDone">Označit vše jako hotové</button>';}
+  h+='</div>';
+
+  // extra care
+  {const ex=activeProducts().filter(isExtra).sort((a,b)=>(CATORD[a.category]??99)-(CATORD[b.category]??99));
+   if(ex.length){const ws=weekStart(t);const dd=(S.days[t]||{}).extra||{};
+    h+='<div class="section"><h3>extra <em>péče</em></h3><div>'+ex.map(p=>{const u=extraUses(p,ws,t);const done=!!dd[p.id];const due=extraDue(p,t);const ago=u.last?diffDays(t,u.last):null;
+      const info=[p.goal?'tento týden '+u.n+'/'+p.goal+'×':(u.n?'tento týden '+u.n+'×':''),ago===null?'zatím nepoužito':ago===0?'použito dnes':'naposledy před '+ago+' '+(ago===1?'dnem':'dny'),due?'dnes na řadě':''].filter(Boolean).join(' · ');
+      return'<div class="row '+(done?'isdone':'')+'"><button class="chk '+(done?'done':'')+'" data-act="extraDone" data-id="'+p.id+'" aria-label="Použito dnes">'+ICHECK+'</button><div class="grow" data-act="extraDone" data-id="'+p.id+'"><div class="title">'+esc(p.name||'Bez názvu')+'</div><div class="sub">'+esc(info)+'</div></div><button class="link" data-act="openProduct" data-id="'+p.id+'">Detail</button></div>';}).join('')+'</div></div>';}}
+  // alerts
+  const al=[];
+  todayIssues(t).forEach(is=>al.push([is.lvl,'<b>'+esc(is.title)+'</b> ('+(is.slot==='am'?'ráno':'večer')+': '+esc(is.pids.map(pname).join(', '))+'). '+esc(is.text)]));
+  const act=activeProducts();
+  act.forEach(p=>{const e=expiryStatus(p);if(e&&e.lvl!=='good')al.push([e.lvl,'<b>'+esc(p.name)+'</b>: '+esc(e.text.toLowerCase())+' ('+fmtShort(e.e)+').']);const r=runoutStatus(p);if(r)al.push(['warn','<b>'+esc(p.name)+'</b>: '+esc(r.text.toLowerCase())+'. Čas přikoupit?']);});
+  activeProducts().filter(p=>isExtra(p)&&p.goal>0).forEach(p=>{const u=extraUses(p,addDays(t,-60),t);const gap=Math.ceil(7/p.goal)+2;const ago=u.last?diffDays(t,u.last):null;if(ago!==null&&ago>gap)al.push(['info','<b>'+esc(p.name)+'</b>: naposledy před '+ago+' dny, cíl je '+p.goal+'× týdně.']);});
+  [...new Set([...scheduledFor(t,'am'),...scheduledFor(t,'pm'),...extrasOn(t)])].forEach(p=>{const hh=allergyHits(p);if(hh.length)al.push(['bad','<b>'+esc(p.name)+'</b> obsahuje látku, na kterou reaguješ: '+esc(hh.join(', '))+'.']);});
+  aftercare(t).forEach(({x,left})=>{const strong=['am','pm'].flatMap(s=>scheduledFor(t,s)).filter(p=>[...actOf(p)].some(k=>STRONG.includes(k)));al.push(['warn','<b>Po zákroku · '+esc(trName(x))+'</b> ('+fmtShort(x.date)+'): ještě '+left+' '+(left===1?'den':left<5?'dny':'dní')+' bez silných aktivních látek'+(strong.length?', dnes vynech: '+esc([...new Set(strong.map(p=>p.name))].join(', '))+'.':'.')+' SPF 50 je teď povinnost.']);});
+  trList().filter(x=>x.date>t&&diffDays(x.date,t)<=7).forEach(x=>{const d=diffDays(x.date,t);al.push(['info','<b>'+esc(trName(x))+'</b> '+(d===1?'zítra':'za '+d+' dní')+(x.time?' v '+esc(x.time):'')+(x.place?' · '+esc(x.place):'')+'. Pár dní předem vynech retinoidy a peelingy.']);});
+  if(act.length&&!act.some(p=>p.am&&actOf(p).has('spf')))al.push(['bad','<b>V ranní rutině nemáš SPF.</b> Dnešní maximum UV je '+nf(pk)+'. SPF 30+ se vyplatí i v zimě.']);
+  {const dis=new Set((S.days[t]||{}).dismissed||[]);const ord={bad:0,warn:1,info:2,good:3};const seen=new Set();
+   const list=al.map(a=>({lvl:a[0],html:a[1],key:(a[0]+':'+a[1].replace(/<[^>]+>/g,'')).slice(0,90)})).filter(a=>{if(dis.has(a.key)||seen.has(a.key))return false;seen.add(a.key);return true;}).sort((a,b)=>ord[a.lvl]-ord[b.lvl]);
+   if(list.length){const shown=alertsAll?list:list.slice(0,3);
+    h+='<div class="section"><h3>na co <em>myslet</em></h3><div class="card" style="padding:4px 16px">'+shown.map(a=>'<div style="position:relative;padding-right:26px">'+alertHtml(a.lvl,a.html)+'<button class="link" style="position:absolute;right:0;top:12px;text-decoration:none;font-size:18px;color:var(--muted)" data-act="dismiss" data-k="'+esc(a.key)+'" aria-label="Skrýt na dnes">×</button></div>').join('')+'</div>'+(list.length>3?'<button class="link" style="margin-top:10px" data-act="alertsAll">'+(alertsAll?'Zobrazit méně':'Zobrazit další ('+(list.length-3)+')')+'</button>':'')+'</div>';}}
+  // UV
+  h+='<div class="section"><h3>slunce <em>&amp; SPF</em> · '+esc(uv.l.name)+'</h3><div class="uv"><div><div class="big">'+nf(Math.round(uv.cur*10)/10)+'</div><div class="lab">UV index teď'+(uv.live?'':' · odhad')+'</div><div class="spf">SPF <b>'+spfFor(uv.cur).spf+'</b></div></div><div><div class="big">'+nf(pk)+'</div><div class="lab">Maximum'+(uv.pt?' v '+hm(uv.pt):'')+'</div><div class="spf">SPF <b>'+rec.spf+'</b></div></div></div>';
+  h+='<p class="small" style="margin-top:12px">'+esc(rec.t)+(uv.from?' UV nad 3 mezi '+hm(uv.from)+' a '+hm(uv.to)+'.':'')+'</p>';
+  h+='</div>';
+
+
+
+  // check-in
+  h+='<div class="section"><h3>pleť <em>dnes</em></h3>';
+  if(!day.condition){h+='<div class="card"><p class="hero">jak se dnes má <em>tvoje pleť?</em></p><p class="small muted">Rychlý check-in na 10 vteřin: stav pleti, co řešíš a spánek. Selfie a detaily podle chuti. Pak ti Claude navrhne, jak upravit rutinu.</p><button class="btn" data-act="goto" data-tab="plet">začít check-in</button></div>';}
+  else{h+='<div class="card"><p class="hero">'+esc(CONDNAME[day.condition])+'</p><p class="small muted">'+esc((day.concerns||[]).map(c=>CONCERNS[c]).filter(Boolean).join(', ')||'Bez potíží')+'</p>'+(day.ai&&day.ai.souhrn?'<p class="small">'+esc(day.ai.souhrn)+'</p>':'')+'<button class="link" data-act="goto" data-tab="plet">Otevřít deník</button></div>';}
+  const ci=cycleInfo(t);
+  if(cycleOn()){const ask=ci&&!ci.lost&&ci.day>=ci.L-2&&S.profile.notYet!==t;
+    h+='<div class="card" style="margin-top:12px"><div class="kicker">Cyklus'+(ci&&!ci.lost?' · '+ci.day+'. den':'')+'</div>';
+    if(!ci||ci.lost)h+='<p class="small" style="margin-top:6px">'+(ci&&ci.lost?'Odhad cyklu už nesedí. Kdy začala poslední menstruace?':'Kdy začala poslední menstruace? Podle toho ti ukážu, jak fáze cyklu ovlivňuje pleť.')+'</p>';
+    else{h+='<p class="hero" style="font-size:24px;margin-top:6px">'+esc(PHASES[ci.phase].l)+(ci.late?' <em class="small" style="font-size:16px">· zpoždění '+ci.late+' '+(ci.late===1?'den':ci.late<5?'dny':'dní')+'</em>':'')+'</p><p class="small">'+esc(PHASES[ci.phase].t)+'</p>';
+      if(!ci.late)h+='<p class="tiny muted">Další menstruace asi za '+ci.next+' '+(ci.next===1?'den':ci.next<5?'dny':'dní')+(ci.learned?' (podle tvých posledních cyklů)':'')+'.</p>';}
+    if(ask||!ci||ci.lost){h+=(ask?'<p class="small" style="margin-top:10px"><b>Začala ti menstruace?</b></p>':'')+'<div class="chips" style="margin-top:8px"><button class="chip" data-act="pStart" data-v="'+t+'">Ano, dnes</button><button class="chip" data-act="pStart" data-v="'+addDays(t,-1)+'">Včera</button><button class="chip" data-act="pOther">Jiný den</button>'+(ask?'<button class="chip" data-act="pNotYet">Ještě ne</button>':'')+'</div>';}
+    else h+='<div style="display:flex;gap:18px;margin-top:4px"><button class="link" data-act="pStart" data-v="'+t+'">Začala dnes</button><button class="link" data-act="pOther">Začala jindy</button></div>';
+    if(pOtherOpen)h+='<div style="display:flex;gap:8px;margin-top:12px"><input type="date" id="pOtherDate" max="'+t+'" value="'+addDays(t,-2)+'" style="flex:1"><button class="btn sm dark" data-act="pOtherSave">Uložit</button></div>';
+    h+='</div>';}
+  const rc=recsFor(t);if(rc.length)h+='<div class="card" style="padding:4px 16px">'+rc.map(r=>alertHtml('info',esc(r))).join('')+'</div>';
+  h+='</div>';
+  return h;
+}
+function recsFor(date){
+  const d=S.days[date];if(!d||!d.condition)return[];const out=[];const cs=d.concerns||[];
+  const pmStrong=scheduledFor(date,'pm').filter(p=>[...actOf(p)].some(k=>STRONG.includes(k)));
+  if((d.condition<=2||cs.includes('zarudnuti')||cs.includes('citlivost'))&&pmStrong.length)out.push('Pleť je podrážděná. Dnes večer zvaž vynechání: '+pmStrong.map(p=>p.name).join(', ')+'. Sázej na zklidnění a obnovu bariéry.');
+  if(cs.includes('suchost'))out.push('Suchá pleť: kyselinu hyaluronovou nanášej na vlhkou pleť a zamkni ji bohatším krémem.');
+  if((d.env||[]).includes('topeni'))out.push('Topení vysušuje. Pomůže zvlhčovač vzduchu a výživnější noční krém.');
+  if((d.env||[]).includes('mraz'))out.push('Mráz a vítr: přidej ochranný krém nebo balzám na tváře a rty.');
+  if(d.sleep&&d.sleep<6)out.push('Málo spánku se ráno projeví otoky a matností. Pomůže studený obklad a oční krém.');
+  if(cs.includes('akne'))out.push('Na pupínky nesahej. Lokálně pomůže BHA nebo benzoyl peroxid, jen ne ve stejné fázi jako retinoid.');
+  {const ci=cycleInfo(date);if(ci&&ci.phase&&(ci.phase==='pozdni'||ci.phase==='menstruace'))out.push(PHASES[ci.phase].l+': '+PHASES[ci.phase].t);}
+  if((d.food||[]).includes('alkohol'))out.push('Po alkoholu je pleť dehydratovaná. Dnes hodně vody a hydratační maska.');
+  return out;
+}
+
+/* ============ PRODUCTS ============ */
+function viewProducts(){
+  let h='<div class="section"><div class="seg"><button class="'+(prodTab==='home'?'on':'')+'" data-act="prodTab" data-v="home">Domácí péče</button><button class="'+(prodTab==='tr'?'on':'')+'" data-act="prodTab" data-v="tr">Procedury</button></div></div>';
+  if(prodTab==='tr')return h+viewTreatments();
+  const all=Object.values(S.products);
+  const issues=weekIssues();
+  h+='<div class="section"><h3>kontrola <em>rutiny</em> · příštích 7 dní</h3>';
+  if(!activeProducts().length)h+='<div class="card small muted">Až přidáš produkty, ukážu ti tu konflikty účinných látek.</div>';
+  else if(!issues.length)h+='<div class="card">'+alertHtml('good','<b>Žádné konflikty.</b> Kombinace účinných látek v tvé rutině vypadají v pořádku.')+'</div>';
+  else h+='<div class="card" style="padding:4px 16px">'+issues.map(is=>'<div class="issue">'+alertHtml(is.lvl,'<b>'+esc(is.title)+'</b>: '+esc(is.pids.map(pname).join(' + '))+'<br>'+esc(is.text)+'<div class="when">'+(is.slot==='am'?'Ráno':'Večer')+' · '+([...is.days].length===7?'každý den':[...is.days].sort().map(i=>WD[i]).join(', '))+'</div>')+'</div>').join('')+'</div>';
+  if(activeProducts().length)h+='<button class="btn ghost block" style="margin-top:12px" data-act="aiRoutine">Hloubková analýza rutiny s Claudem</button><div id="aiRoutineOut" style="margin-top:12px">'+(S.profile.routineAi?renderRoutineAi(S.profile.routineAi):'')+'</div>';
+  h+='</div>';
+  h+='<div class="section"><div style="display:flex;gap:8px;align-items:center"><input type="search" placeholder="Hledat produkt…" value="'+esc(prodQuery)+'" data-input="prodQuery" style="flex:1"></div><div class="chips" style="margin:12px 0 4px">'+[['all','Vše'],['am','Ráno'],['pm','Večer'],['extra','Extra péče'],['alert','Expirace a docházení'],['archived','Archiv']].map(([k,l])=>'<button class="chip '+(prodFilter===k?'on':'')+'" data-act="prodFilter" data-v="'+k+'">'+l+'</button>').join('')+'</div>';
+  let list=all.filter(p=>prodFilter==='archived'?p.archived:!p.archived);
+  if(prodFilter==='extra')list=list.filter(isExtra);if(prodFilter==='am')list=list.filter(p=>p.am);if(prodFilter==='pm')list=list.filter(p=>p.pm);
+  if(prodFilter==='alert')list=list.filter(p=>{const e=expiryStatus(p);return(e&&e.lvl!=='good')||runoutStatus(p);});
+  const q=prodQuery.trim().toLowerCase();if(q)list=list.filter(p=>[p.name,p.brand,CATNAME[p.category]].join(' ').toLowerCase().includes(q));
+  list.sort((a,b)=>(CATORD[a.category]??99)-(CATORD[b.category]??99)||(a.name||'').localeCompare(b.name||''));
+  if(!list.length)h+='<div class="empty"><div class="serif">'+(all.length?'Nic tu není':'Tvoje polička je prázdná')+'</div><div class="small">'+(all.length?'Zkus jiný filtr.':'Ťukni na + a naskenuj čárový kód nebo vyfoť obal.')+'</div></div>';
+  else if(prodView==='grid')h+='<div class="pgrid" style="margin-top:14px">'+list.map(p=>{const e=expiryStatus(p),r=runoutStatus(p);const src=p.photo||p.thumb;const fl=e&&e.lvl==='bad'?'<span class="flag bad">po expiraci</span>':e&&e.lvl==='warn'?'<span class="flag warn">brzy expiruje</span>':r?'<span class="flag warn">dochází</span>':'';return'<button class="ptile" data-act="openProduct" data-id="'+p.id+'">'+fl+'<div class="im">'+(src?'<img alt="" src="'+esc(src)+'">':'<span class="ph">'+esc((p.brand||p.name||'?').trim().charAt(0).toUpperCase())+'</span>')+'</div><div class="cap"><div class="br">'+esc(p.brand||CATNAME[p.category]||'')+'</div><div class="nm">'+esc(p.name||'Bez názvu')+'</div></div></button>';}).join('')+'</div>';
+  else h+='<div>'+list.map(p=>{const e=expiryStatus(p),r=runoutStatus(p);return'<div class="row" data-act="openProduct" data-id="'+p.id+'" style="cursor:pointer">'+thumbHtml(p)+'<div class="grow"><div class="title">'+esc(p.name||'Bez názvu')+'</div><div class="sub">'+esc([p.brand,CATNAME[p.category]].filter(Boolean).join(' · '))+'</div><div class="sub">'+esc(slotText(p)+' · '+freqText(p))+'</div>'+(()=>{const hh=allergyHits(p);return((e&&e.lvl!=='good')||r||hh.length)?'<div class="pill-active">'+(hh.length?statusHtml({lvl:'bad',text:'Alergen: '+hh[0]})+' ':'')+(e&&e.lvl!=='good'?statusHtml(e):'')+' '+(r?statusHtml(r):'')+'</div>':'';})()+'</div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#857F78" stroke-width="1.6"><path d="M9 6l6 6-6 6"/></svg></div>';}).join('')+'</div>';
+  h+='</div>';
+  return h;
+}
+function viewTreatments(){
+  const t=todayStr();const all=trList();const up=all.filter(x=>x.date>t).reverse();const past=all.filter(x=>x.date<=t);let h='';
+  const yr=t.slice(0,4);const thisY=past.filter(x=>x.date.startsWith(yr));const spent=thisY.reduce((a,x)=>a+(+x.price||0),0);
+  if(all.length)h+='<div class="section"><div class="stats"><div><div class="n">'+thisY.length+'</div><div class="l">procedur v '+yr+'</div></div><div><div class="n">'+(spent?nf(spent,0):'—')+'</div><div class="l">Kč letos</div></div><div><div class="n">'+(past[0]?diffDays(t,past[0].date):'—')+'</div><div class="l">dní od poslední</div></div></div></div>';
+  const ac=aftercare(t);if(ac.length)h+='<div class="section"><div class="card" style="padding:4px 16px">'+ac.map(({x,left})=>alertHtml('warn','<b>Hojení · '+esc(trName(x))+'</b>: ještě '+left+' d bez retinoidů a kyselin.')).join('')+'</div></div>';
+  const row=x=>{const st=x.reaction?['','Hrozná','Nic moc','OK','Dobrá','Skvělá'][x.reaction]:'';return'<div class="row" data-act="openTr" data-id="'+x.id+'" style="cursor:pointer"><div style="flex:none;width:52px;text-align:center"><div class="hero" style="font-size:26px;margin:0">'+parseYmd(x.date).getDate()+'</div><div class="tiny muted">'+parseYmd(x.date).toLocaleDateString('cs-CZ',{month:'short',year:'2-digit'})+'</div></div><div class="grow"><div class="title">'+esc(trName(x))+'</div><div class="sub">'+esc([x.place,x.price?nf(x.price,0)+' Kč':'',st?'reakce: '+st:''].filter(Boolean).join(' · ')||'')+'</div></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#857F78" stroke-width="1.6"><path d="M9 6l6 6-6 6"/></svg></div>';};
+  h+='<div class="section"><h3><em>plánované</em></h3>'+(up.length?'<div>'+up.map(row).join('')+'</div>':'<p class="small muted">Žádný termín. Ťukni na + a přidej plánovanou proceduru.</p>')+'</div>';
+  h+='<div class="section"><h3><em>historie</em></h3>'+(past.length?'<div>'+past.map(row).join('')+'</div>':'<div class="empty"><div class="serif">Zatím žádná procedura</div><div class="small">Zapisuj ošetření u kosmetičky, peelingy nebo laser. Appka pak po zákroku pohlídá, kdy vynechat aktivní látky.</div></div>')+'</div>';
+  const last={};past.forEach(x=>{if(!last[x.type])last[x.type]=x;});const lk=Object.keys(last);
+  if(lk.length)h+='<div class="section"><h3>naposledy <em>podle typu</em></h3><div class="card" style="padding:0 16px">'+lk.map(k=>{const n=past.filter(x=>x.type===k).length;return'<div class="row"><div class="grow"><div class="title" style="font-size:17px">'+esc(TREAT[k]?TREAT[k][0]:k)+'</div><div class="sub">'+fmtMed(last[k].date)+' · celkem '+n+'×</div></div></div>';}).join('')+'</div></div>';
+  return h;
+}
+function openTreatment(x,isNew){T=clone(x);const tp=TREAT[T.type]||TREAT.jine;
+  let h='<label class="lbl" style="margin-top:0">Typ</label><select id="tType">'+Object.entries(TREAT).map(([k,v])=>'<option value="'+k+'" '+(T.type===k?'selected':'')+'>'+v[0]+'</option>').join('')+'</select>'+(T.type==='jine'?'<input type="text" id="tCustom" placeholder="Název procedury" value="'+esc(T.custom||'')+'" style="margin-top:8px">':'');
+  h+='<div class="grid2"><div><label class="lbl">Datum</label><input type="date" id="tDate" value="'+esc(T.date||todayStr())+'"></div><div><label class="lbl">Čas</label><input type="text" id="tTime" placeholder="např. 16:30" value="'+esc(T.time||'')+'"></div></div>';
+  h+='<label class="lbl">Kde / u koho</label><input type="text" id="tPlace" placeholder="Salon, kosmetička, klinika" value="'+esc(T.place||'')+'">';
+  h+='<div class="grid2"><div><label class="lbl">Cena (Kč)</label><input type="number" id="tPrice" value="'+esc(T.price||'')+'"></div><div><label class="lbl">Bez aktivních látek</label><input type="number" min="0" max="30" id="tPause" value="'+esc(T.pause??tp[1])+'"></div></div><p class="tiny muted" style="margin-top:6px">Počet dní po zákroku bez retinoidů a kyselin. Vychází z běžné praxe. Když ti kosmetička řekla jinak, řiď se jí.</p>';
+  if(!isNew||T.date<=todayStr())h+='<label class="lbl">Jak pleť reagovala</label><div class="chips">'+[5,4,3,2,1].map(v=>'<button class="chip '+(T.reaction===v?'on':'')+'" data-act="tReact" data-v="'+v+'">'+['','Hrozná','Nic moc','OK','Dobrá','Skvělá'][v]+'</button>').join('')+'</div>';
+  h+='<label class="lbl">Poznámka</label><textarea id="tNotes" placeholder="Co se dělalo, použité přípravky, doporučení kosmetičky…">'+esc(T.notes||'')+'</textarea>';
+  h+='<label class="lbl">Příště za (týdny)</label><input type="number" min="0" max="104" id="tRepeat" placeholder="např. 4" value="'+esc(T.repeat||'')+'">';
+  h+='<button class="btn dark block" style="margin-top:18px" data-act="saveTr">'+(isNew?'Přidat':'Uložit')+'</button>';
+  if(!isNew)h+='<button class="btn danger block" style="margin-top:10px" data-act="delTr">Smazat</button>';
+  openSheet(isNew?'Nová procedura':trName(T),h);T._new=isNew;}
+function readTr(){const g=id=>{const e=document.getElementById(id);return e?e.value:undefined;};if(!T)return;const ty=g('tType');const pz=g('tPause');if(ty&&ty!==T.type){T.type=ty;T.pause=(TREAT[ty]||TREAT.jine)[1];}else if(pz!==undefined)T.pause=pz===''?0:+pz;T.custom=g('tCustom')??T.custom;T.date=g('tDate')||T.date;T.time=(g('tTime')??T.time??'').trim();T.place=(g('tPlace')??T.place??'').trim();T.price=g('tPrice')?+g('tPrice'):'';T.notes=g('tNotes')??T.notes;T.repeat=g('tRepeat')?+g('tRepeat'):'';}
+function obRender(){const p=S.profile;const st=OB.step;const el=$('#ob');el.classList.remove('hidden');document.body.style.overflow='hidden';let h='<div class="in">';
+  if(st<0){h+='<div class="top"><div class="brand">rituál</div><span></span></div><div class="welcome"><div class="kicker" style="margin-bottom:18px">skincare deník</div><h1>tvoje pleť,<br><em>tvůj rituál.</em></h1><p class="lead">Rutina, produkty a deník pleti na jednom místě. Appka hlídá kombinace látek i expirace a učí se, co tvé pleti svědčí.</p><div class="feat"><span>rutina ráno a večer</span><span>kontrola účinných látek a alergenů</span><span>deník pleti a ranní diagnostika</span></div></div><button class="btn dark block" style="padding:15px" data-act="obNext">Začít</button><p class="tiny muted center" style="margin-top:12px">Nastavení zabere minutu.</p></div>';el.innerHTML=h;el.scrollTop=0;return;}
+  const titles=['vítej v <em>rituálu</em>','tvoje <em>pleť</em>','tvoje <em>3 beauty slova</em>','první <em>produkt</em>'];
+  h+='<div class="top"><div class="brand">rituál</div><button class="link" data-act="obDone">Přeskočit</button></div><div class="body"><div class="kicker" style="margin-bottom:10px">'+(st+1)+' / 4</div><div style="display:flex;gap:6px;margin-bottom:26px">'+[0,1,2,3].map(i=>'<div style="flex:1;height:2px;background:'+(i<=st?'var(--ink)':'var(--chip)')+'"></div>').join('')+'</div><h2 style="font-size:36px;margin-bottom:10px">'+titles[st]+'</h2>';
+  if(st===0){h+='<p class="small muted">Pár otázek, aby ti appka radila na míru.</p><label class="lbl">Jak ti mám říkat?</label><input type="text" id="obName" value="'+esc(p.name||'')+'" placeholder="Jméno"><label class="lbl">Pohlaví</label><div class="chips">'+Object.entries(GENDER).map(([k,l])=>'<button class="chip '+(p.gender===k?'on':'')+'" data-act="obSet" data-f="gender" data-v="'+k+'">'+l+'</button>').join('')+'</div>'+(p.gender==='zena'?'<p class="tiny muted" style="margin-top:8px">Appka bude sledovat i vliv cyklu na pleť. V profilu to můžeš vypnout.</p>':'')+'<label style="display:flex;gap:10px;align-items:flex-start;margin-top:22px;font-size:13px"><input type="checkbox" id="obConsent" style="width:20px;height:20px;flex:none" '+(p.consentAt?'checked':'')+'><span>Souhlasím se zpracováním údajů o pleti, fotek a údajů o zdraví (např. cyklus, alergie) podle <a class="link" href="soukromi.html" target="_blank" rel="noopener">zásad ochrany osobních údajů</a>.</span></label>';}
+  if(st===1){h+='<label class="lbl">Typ pleti</label><div class="chips">'+Object.entries(SKINTYPE).map(([k,l])=>'<button class="chip '+(p.skinType===k?'on':'')+'" data-act="obSet" data-f="skinType" data-v="'+k+'">'+l+'</button>').join('')+'</div><label class="lbl">Citlivost</label><div class="chips">'+Object.entries(SENS).map(([k,l])=>'<button class="chip '+(p.sens===k?'on':'')+'" data-act="obSet" data-f="sens" data-v="'+k+'">'+l+'</button>').join('')+'</div><label class="lbl">Co chceš řešit</label><div class="chips">'+Object.entries(CONCERNS).map(([k,l])=>'<button class="chip '+((p.concerns||[]).includes(k)?'on':'')+'" data-act="obConcern" data-v="'+k+'">'+esc(l)+'</button>').join('')+'</div>';}
+  if(st===2){const w=(p.words||[]).filter(Boolean);h+='<p class="small muted">Jaká je tvoje rutina? Vyber tři slova, Claude podle nich ladí doporučení.</p>'+(w.length?'<div class="chips" style="margin:14px 0">'+w.map(x=>'<span class="chip on">'+esc(x)+'</span>').join('')+'</div>':'')+'<button class="btn block" style="margin-top:12px" data-act="obQuiz">'+(w.length?'Udělat kvíz znovu':'Nevíš? Udělej kvíz (6 otázek)')+'</button><div class="chips" style="margin-top:16px">'+WORDS.map(x=>'<button class="chip '+(w.includes(x)?'on':'')+'" data-act="obWord" data-v="'+esc(x)+'">'+esc(x)+'</button>').join('')+'</div>';}
+  if(st===3){h+='<p class="small muted">Začni tím, co používáš každý den, třeba čisticím gelem nebo krémem. Naskenuj kód, vyfoť obal nebo vlož odkaz z e-shopu.</p><button class="btn dark block" style="margin-top:20px;padding:15px" data-act="obProduct">Přidat první produkt</button>';}
+  h+='</div><div class="foot">'+(st?'<button class="link" data-act="obBack">Zpět</button>':'<span></span>')+(st<3?'<button class="btn dark" data-act="obNext">Pokračovat</button>':'<button class="link" data-act="obDone">Přidám později</button>')+'</div></div>';
+  el.innerHTML=h;el.scrollTop=0;}
+function obFinish(){S.profile.onboarded=true;saveProfile();OB=null;$('#ob').classList.add('hidden');$('#ob').innerHTML='';document.body.style.overflow='';}
+function renderRoutineAi(r){if(!r)return'';const li=a=>(a&&a.length)?'<ul>'+a.map(x=>'<li>'+esc(typeof x==='string'?x:JSON.stringify(x))+'</li>').join('')+'</ul>':'';
+  let h='<div class="ai"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px"><div class="k">Analýza rutiny · Claude'+(r.at?' · '+fmtShort(r.at):'')+'</div><button class="link" data-act="raToggle">'+(routineAiOpen?'Ukázat méně':'Ukázat více')+'</button></div>';
+  if(!routineAiOpen){const t=String(r.hodnoceni||'');const first=(t.match(/^[^.!?]*[.!?]/)||[t])[0];return h+(first?'<p class="small" style="font-family:var(--sans);font-size:14px;margin:0">'+esc(first)+'</p>':'')+'</div>';}
+  if(r.hodnoceni)h+='<p>'+esc(r.hodnoceni)+'</p>';
+  if(r.konflikty&&r.konflikty.length)h+='<div class="kicker" style="margin-top:10px">Konflikty</div><ul>'+r.konflikty.map(k=>'<li><b>'+esc((k.produkty||[]).join(' + '))+'</b>: '+esc(k.problem||'')+(k.reseni?' → '+esc(k.reseni):'')+'</li>').join('')+'</ul>';
+  if(r.poradi_rano&&r.poradi_rano.length)h+='<div class="kicker">Pořadí ráno</div><p class="small">'+esc(r.poradi_rano.join(' → '))+'</p>';
+  if(r.poradi_vecer&&r.poradi_vecer.length)h+='<div class="kicker">Pořadí večer</div><p class="small">'+esc(r.poradi_vecer.join(' → '))+'</p>';
+  if(r.chybi&&r.chybi.length)h+='<div class="kicker">Co by se hodilo</div>'+li(r.chybi);
+  if(r.nadbytecne&&r.nadbytecne.length)h+='<div class="kicker">Možná zbytečné</div>'+li(r.nadbytecne);
+  if(r.tipy&&r.tipy.length)h+='<div class="kicker">Tipy</div>'+li(r.tipy);
+  return h+'<p class="tiny muted">Orientační doporučení, ne dermatologická konzultace.</p></div>';}
+
+/* ----- add / edit product ----- */
+let F=null,showAllAct=false; // product being edited
+function openSheet(title,html){$('#sheetTitle').textContent=title;$('#sheetBody').innerHTML=html;$('#sheet').classList.remove('hidden');document.body.style.overflow='hidden';$('.sheet-panel').scrollTop=0;}
+function closeSheet(){$('#sheet').classList.add('hidden');document.body.style.overflow='';F=null;}
+function addProductStart(){
+  F=null;showAllAct=false;
+  openSheet('Nový produkt','<p class="small muted">Nejrychlejší je naskenovat čárový kód a pak vyfotit obal se složením. Claude z fotky přečte název, značku i účinné látky.</p>'+
+   '<label class="choice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 7V4h3M18 4h3v3M21 17v3h-3M6 20H3v-3M7 8v8M10 8v8M13 8v8M16 8v8"/></svg><div><div class="t">Naskenovat čárový kód</div><div class="d">Vyfoť kód zblízka. Když produkt už máš, otevře se.</div></div><input type="file" accept="image/*" capture="environment" data-change="scanFile"></label>'+
+   '<label class="choice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg><div><div class="t">Vyfotit obal a složení</div><div class="d">1–2 fotky: přední strana a seznam složení (INCI)</div></div><input type="file" accept="image/*" multiple data-change="photoFiles"></label>'+
+   '<button class="choice" data-act="linkProduct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><div><div class="t">Vložit odkaz z e-shopu</div><div class="d">Odkaz, případně i zkopírovaný text ze stránky</div></div></button>'+
+   '<button class="choice" data-act="manualProduct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 20h4L19 9l-4-4L4 16v4z"/></svg><div><div class="t">Zadat ručně</div><div class="d">Vyplníš název a složení sama</div></div></button>'+
+   '<div id="addStatus" class="small" style="margin-top:10px"></div>');
+}
+function urlHints(url){try{const u=new URL(url);const host=u.hostname.replace(/^www\./,'');const segs=u.pathname.split('/').map(x=>{try{return decodeURIComponent(x)}catch(e){return x}}).filter(Boolean).map(x=>x.replace(/\.(html?|php|aspx?)$/i,'').replace(/[-_+]+/g,' ').trim()).filter(x=>x&&!/^\d+$/.test(x)&&!/^[a-z]{2}(-[a-z]{2})?$/i.test(x));return{host,segs};}catch(e){return{host:'',segs:[]};}}
+const titleCase=t=>t.split(' ').map(w=>w?w.charAt(0).toUpperCase()+w.slice(1):w).join(' ');
+const RETAIL=/(notino|sephora|douglas|lookfantastic|feelunique|cultbeauty|spacenk|net-a-porter|mytheresa|amazon|alza|mall|dm|rossmann|teta|benu|drmax|pilulka|lekarna|lekarna24|benulekarna|parfums|parfemy|kosmetika|marionnaud|beautyday|bellatrix|yesstyle|stylevana|ulta|boots|zalando|aboutyou|harrods|selfridges|libertylondon|douglas)/i;
+function brandFromHost(host){const parts=String(host||'').toLowerCase().split('.');if(parts.length<2)return'';const core=parts.length>2&&parts[parts.length-2].length<=3?parts[parts.length-3]:parts[parts.length-2];if(!core||RETAIL.test(core))return'';return titleCase(core.replace(/-/g,' '));}
+const GENERIC=/^(p|produkt|produkty|product|products|kosmetika|pletova pece|pece o plet|skin care|skincare|shop|eshop|katalog|catalog|detail|item|beauty|obliceje|face|zbozi|znacky|brands?)$/i;
+function blankProduct(extra){return Object.assign({url:'',id:uid(),name:'',brand:'',category:'serum',ean:'',ingredients:'',actives:[],am:false,pm:true,freq:{type:'daily',days:[],every:2,start:todayStr()},opened:'',pao:'',expiry:'',weeks:'',low:false,archived:false,thumb:'',notes:'',createdAt:todayStr()},extra||{});}
+async function onScan(file){
+  const st=$('#addStatus');st.innerHTML='<span class="spinner"></span> Čtu čárový kód…';
+  try{const code=await decodeBarcode(file);
+    if(!code){st.innerHTML='Kód se nepodařilo přečíst. Zkus ostřejší fotku z menší vzdálenosti, nebo pokračuj fotkou obalu.';return;}
+    const ex=Object.values(S.products).find(p=>p.ean===code);
+    if(ex){toast('Tenhle produkt už máš');openProduct(ex.id);return;}
+    try{st.innerHTML='<span class="spinner"></span> Hledám produkt v databázi…';const r=await api('/api/ean?code='+encodeURIComponent(code));
+      if(r&&r.found&&(r.name||r.brand)){F=blankProduct({ean:code,name:r.name||'',brand:r.brand||'',ingredients:r.ingredients||'',ingSource:r.ingredients?'web':'',photo:r.image||''});F.actives=detectActives(F.ingredients);if(['maska','pristroj','peeling'].includes(F.category)){F.any=true;}openForm(true);toast(F.ingredients?'Nalezeno i se složením. Zkontroluj údaje.':'Produkt nalezen, složení doplň fotkou nebo s Claudem.');return;}}catch(e){}
+    F=blankProduct({ean:code});
+    st.innerHTML='Kód <b>'+esc(code)+'</b> načten.';
+    $('#sheetBody').insertAdjacentHTML('beforeend','<div class="card" style="margin-top:12px"><p class="small"><b>Teď vyfoť obal a seznam složení.</b> V databázi jsem ho nenašla, z fotky ho přečte Claude.</p><label class="btn block" style="position:relative;overflow:hidden">Vyfotit obal<input type="file" accept="image/*" multiple data-change="photoFiles" style="position:absolute;inset:0;opacity:0"></label><button class="link" style="margin-top:12px" data-act="manualProduct">Nebo vyplnit ručně</button></div>');
+  }catch(e){st.textContent=e.message||'Něco se pokazilo.';}
+}
+async function onPhotos(files){
+  files=Array.from(files||[]).slice(0,3);if(!files.length)return;
+  const st=$('#addStatus')||$('#formStatus');if(st)st.innerHTML='<span class="spinner"></span> Claude čte obal…';
+  const base=F||blankProduct();
+  try{
+    const loaded=[];for(const f of files)loaded.push(await loadImg(f));
+    setVariants(base,loaded[0].img,null);base.thumb='';
+    const blobs=[];for(const l of loaded){blobs.push(await toBlob(scaled(l.img,1400)));}
+    if(!sampleFn||!canImages){F=base;for(const l of loaded)URL.revokeObjectURL(l.url);if(st)st.textContent='Fotka uložená. AI čtení obalu tu není dostupné, doplň údaje ručně.';openForm(true);return;}
+    const prompt='Jsi expert na kosmetiku. Na fotkách je obal pleťového přípravku (přední strana, případně zadní strana se složením INCI). Vytěž informace. Odpověz POUZE validním JSON bez dalšího textu:\n{"name":"název produktu bez značky","brand":"značka","category":"jeden klíč z: '+CATS.map(c=>c[0]).join(', ')+'","ingredients":"úplný seznam INCI, pokud je na fotce čitelný, jinak prázdný řetězec","ingredients_known":"pokud INCI na fotce není a tento KONKRÉTNÍ produkt spolehlivě znáš, napiš jeho INCI ze svých znalostí; když si nejsi jistý, prázdný řetězec","bbox":[x0,y0,x1,y1] = ohraničení samotného produktu na PRVNÍ fotce jako zlomky šířky a výšky 0–1,"actives":["klíče z: '+Object.keys(ACTIVES).join(', ')+'"],"pao_months":číslo z ikony otevřeného kelímku nebo null,"slot":"am|pm|both (kdy se produkt typicky používá)","ean":"číslice čárového kódu, pokud je vidět, jinak prázdný řetězec","notes":"krátká česká poznámka k použití, max 1 věta"}';
+    const v=await askJSON(prompt,blobs);
+    if(v.name)base.name=String(v.name);if(v.brand)base.brand=String(v.brand);if(CATNAME[v.category])base.category=v.category;
+    if(v.ingredients){base.ingredients=String(v.ingredients);base.ingSource='foto';}else if(v.ingredients_known){base.ingredients=String(v.ingredients_known);base.ingSource='znalosti';}
+    try{setVariants(base,loaded[0].img,v.bbox);}catch(e){}
+    for(const l of loaded)URL.revokeObjectURL(l.url);
+    const acts=new Set([...(Array.isArray(v.actives)?v.actives.filter(k=>ACTIVES[k]):[]),...detectActives(base.ingredients)]);base.actives=[...acts];
+    if(v.pao_months&&+v.pao_months>0)base.pao=String(+v.pao_months);
+    if(['maska','pristroj','peeling'].includes(base.category)){base.any=true;base.am=false;base.pm=false;base.freq.type='asneeded';}else if(v.slot==='am'){base.am=true;base.pm=false;}else if(v.slot==='both'){base.am=true;base.pm=true;}else if(v.slot==='pm'){base.am=false;base.pm=true;}
+    if(base.category==='spf'){base.am=true;base.pm=false;}
+    if(!base.ean&&v.ean)base.ean=String(v.ean).replace(/\D/g,'');
+    if(v.notes&&!base.notes)base.notes=String(v.notes);
+    F=base;openForm(true);toast('Hotovo. Zkontroluj údaje a ulož.');
+  }catch(e){F=base;if(st)st.textContent=(e.message||'Čtení se nepovedlo.')+' Údaje můžeš doplnit ručně.';openForm(true);}
+}
+function openProduct(id){showAllAct=false;const p=S.products[id];if(!p)return;F=clone(p);F.freq=F.freq||{type:'daily',days:[],every:2,start:todayStr()};openForm(false);}
+function openForm(isNew){
+  const p=F;const f=p.freq;
+  const e=expiryStatus(p),r=runoutStatus(p);
+  let h='';
+  const src=p.photo||p.thumb;
+  if(src)h+='<div class="photo-big"><img alt="" src="'+esc(src)+'"></div>';
+  if(src&&p._var)h+='<div class="chips" style="justify-content:center;margin:0 0 12px">'+[['white','Bílé pozadí'],['crop','Jen ořez'],['orig','Bez ořezu']].filter(([k])=>p._var[k]).map(([k,l])=>'<button class="chip '+(p._mode===k?'on':'')+'" data-act="fPhotoMode" data-v="'+k+'">'+l+'</button>').join('')+'</div>';
+  else h+='<label class="choice" style="flex-direction:column;text-align:center;gap:8px;padding:26px 18px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg><div class="t">Přidat fotku produktu</div><div class="d">Vyfoť obal, nebo nahraj screenshot z e-shopu. Ořízne se na bílé pozadí.</div><input type="file" accept="image/*" data-change="photoOnly"></label>';
+  h+='<div class="center" style="display:flex;gap:18px;justify-content:center;flex-wrap:wrap"><label class="link" style="position:relative;overflow:hidden;display:inline-block">'+(src?'Nová fotka':'Vyfotit obal')+'<input type="file" accept="image/*" data-change="photoOnly" style="position:absolute;inset:0;opacity:0"></label><label class="link" style="position:relative;overflow:hidden;display:inline-block">Přečíst obal znovu<input type="file" accept="image/*" multiple data-change="photoFiles" style="position:absolute;inset:0;opacity:0"></label></div><div id="formStatus" class="small muted center" style="margin-top:8px">'+(e||r?statusHtml(e)+' '+statusHtml(r):'')+'</div>';
+  h+='<label class="lbl">Název</label><input type="text" id="fName" value="'+esc(p.name)+'" placeholder="např. Retinol 0.3 Serum">';
+  h+='<div class="grid2"><div><label class="lbl">Značka</label><input type="text" id="fBrand" value="'+esc(p.brand)+'"></div><div><label class="lbl">Kategorie</label><select id="fCat">'+CATS.map(c=>'<option value="'+c[0]+'" '+(p.category===c[0]?'selected':'')+'>'+c[1]+'</option>').join('')+'</select></div></div>';
+  h+='<label class="lbl">Kdy</label><div class="chips"><button class="chip '+(p.am?'on':'')+'" data-act="fToggle" data-k="am">Ráno</button><button class="chip '+(p.pm?'on':'')+'" data-act="fToggle" data-k="pm">Večer</button><button class="chip '+(p.any?'on':'')+'" data-act="fToggle" data-k="any">Kdykoli</button></div><p class="tiny muted" style="margin-top:6px">Kdykoli = masky, peelingy, přístroje. Najdeš je na Dnes v sekci Extra péče.</p>';
+  h+='<label class="lbl">Frekvence</label><div class="seg"><button class="'+(f.type==='daily'?'on':'')+'" data-act="fFreq" data-v="daily">Denně</button><button class="'+(f.type==='days'?'on':'')+'" data-act="fFreq" data-v="days">Dny</button><button class="'+(f.type==='interval'?'on':'')+'" data-act="fFreq" data-v="interval">Interval</button><button class="'+(f.type==='asneeded'?'on':'')+'" data-act="fFreq" data-v="asneeded">Občas</button></div>';
+  if(p.any||f.type==='asneeded')h+='<label class="lbl">Cíl za týden (volitelně)</label><input type="number" min="0" max="14" id="fGoal" placeholder="např. 2" value="'+esc(p.goal||'')+'">';
+  if(f.type==='days')h+='<div class="chips" style="margin-top:10px">'+WD.map((d,i)=>'<button class="chip '+((f.days||[]).includes(i)?'on':'')+'" data-act="fDay" data-i="'+i+'">'+d+'</button>').join('')+'</div>';
+  if(f.type==='interval')h+='<div class="grid2" style="margin-top:10px"><div><label class="lbl" style="margin-top:0">Každý N. den</label><input type="number" min="1" max="30" id="fEvery" value="'+esc(f.every||2)+'"></div><div><label class="lbl" style="margin-top:0">Počínaje</label><input type="date" id="fStart" value="'+esc(f.start||todayStr())+'"></div></div>';
+  h+='<label class="lbl">Látky ve složení</label>'+AGROUPS.map(([g,gl])=>{const ks=Object.entries(ACTIVES).filter(([k,v])=>(v.g||'other')===g);const on=ks.filter(([k])=>(p.actives||[]).includes(k));const open=showAllAct||on.length;if(!open)return'';return'<div class="tiny muted" style="margin:10px 0 6px">'+gl+'</div><div class="chips">'+(showAllAct?ks:on).map(([k,v])=>'<button class="chip '+((p.actives||[]).includes(k)?'on':'')+'" data-act="fAct" data-k="'+k+'">'+esc(v.l)+'</button>').join('')+'</div>';}).join('')+((p.actives||[]).length||showAllAct?'':'<p class="small muted">Zatím žádné. Doplň složení a ťukni na Rozpoznat.</p>')+'<button class="link" style="margin-top:10px" data-act="fAllAct">'+(showAllAct?'Skrýt nevybrané':'Upravit látky ručně')+'</button>';
+  h+='<label class="lbl">Složení (INCI)</label><textarea id="fIng" placeholder="Aqua, Glycerin, Niacinamide…">'+esc(p.ingredients)+'</textarea>'+(p.ingSource==='znalosti'?'<div class="unverified">Složení doplnil Claude ze svých znalostí, není ověřené. Zkontroluj ho na obalu nebo na INCIDecoder, receptury se mění.</div>':'')+'<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px"><button class="link" data-act="fDetect">Rozpoznat účinné látky</button><button class="link" data-act="fKnown">Doplnit složení s Claudem</button><a class="link" target="_blank" rel="noopener" href="https://incidecoder.com/search?query='+encodeURIComponent(((p.brand||'')+' '+(p.name||'')).trim())+'">Najít na INCIDecoder ↗</a></div>';
+  h+='<div class="grid2"><div><label class="lbl">Otevřeno</label><input type="date" id="fOpened" value="'+esc(p.opened)+'"></div><div><label class="lbl">Po otevření (PAO)</label><select id="fPao"><option value="">—</option>'+[3,6,9,12,18,24,36].map(m=>'<option value="'+m+'" '+(String(p.pao)===String(m)?'selected':'')+'>'+m+' M</option>').join('')+'</select></div></div>';
+  h+='<div class="grid2"><div><label class="lbl">Expirace na obalu</label><input type="date" id="fExp" value="'+esc(p.expiry)+'"></div><div><label class="lbl">Vydrží cca (týdny)</label><input type="number" min="1" max="104" id="fWeeks" value="'+esc(p.weeks)+'"></div></div>';
+  h+='<div class="chips" style="margin-top:12px"><button class="chip '+(p.low?'on':'')+'" data-act="fToggle" data-k="low">Dochází</button></div>';
+  h+='<label class="lbl">Odkaz na produkt</label><input type="text" inputmode="url" id="fUrl" value="'+esc(p.url||'')+'" placeholder="https://…">'+(p.url&&/^https?:\/\//i.test(p.url)?'<a class="link" style="display:inline-block;margin-top:8px" target="_blank" rel="noopener" href="'+esc(p.url)+'">Otevřít na webu ↗</a>':'');
+  h+='<label class="lbl">EAN</label><input type="text" inputmode="numeric" id="fEan" value="'+esc(p.ean)+'">';
+  h+='<label class="lbl">Poznámka</label><textarea id="fNotes" style="min-height:60px">'+esc(p.notes)+'</textarea>';
+  h+='<div id="fWarn" style="margin-top:14px"></div>';
+  h+='<button class="btn dark block" style="margin-top:18px" data-act="saveForm">'+(isNew?'Přidat do rutiny':'Uložit změny')+'</button>';
+  if(!isNew)h+='<div style="display:flex;gap:10px;margin-top:10px"><button class="btn ghost" style="flex:1" data-act="archiveForm">'+(p.archived?'Vrátit do rutiny':'Archivovat')+'</button><button class="btn danger" style="flex:1" data-act="deleteForm">Smazat</button></div>';
+  openSheet(isNew?'Nový produkt':(p.name||'Produkt'),h);F._new=isNew;previewWarn();
+}
+function readForm(){if(!F)return;const g=id=>{const el=document.getElementById(id);return el?el.value:undefined;};
+  F.name=g('fName')?.trim()??F.name;F.brand=g('fBrand')?.trim()??F.brand;F.category=g('fCat')||F.category;{const ni=g('fIng');if(ni!==undefined&&ni!==F.ingredients){F.ingredients=ni;if(F.ingSource==='znalosti')F.ingSource='rucne';}}F.opened=g('fOpened')??F.opened;F.pao=g('fPao')??F.pao;F.expiry=g('fExp')??F.expiry;F.weeks=g('fWeeks')?+g('fWeeks'):'';F.ean=(g('fEan')||'').replace(/\D/g,'');F.notes=g('fNotes')??F.notes;if(g('fUrl')!==undefined)F.url=g('fUrl').trim();
+  if(document.getElementById('fGoal'))F.goal=g('fGoal')?+g('fGoal'):'';if(document.getElementById('fEvery'))F.freq.every=Math.max(1,+g('fEvery')||1);if(document.getElementById('fStart'))F.freq.start=g('fStart')||todayStr();}
+function previewWarn(){const w=$('#fWarn');if(!w||!F)return;const tmp=clone(F);delete tmp._new;tmp.archived=false;const others=activeProducts().filter(p=>p.id!==tmp.id);const found=[];
+  for(const slot of['am','pm']){if(!tmp[slot])continue;for(let i=0;i<7;i++){const d=addDays(todayStr(),i);if(!isScheduled(tmp,d,slot))continue;const set=[...others.filter(p=>isScheduled(p,d,slot)),tmp];analyzeSlot(set,slot).filter(x=>x.pids.includes(tmp.id)).forEach(x=>{if(!found.some(f=>f.id===x.id&&f.slot===slot))found.push(x);});}}
+  const hh=allergyHits(tmp);if(hh.length)found.unshift({lvl:'bad',slot:tmp.am?'am':'pm',title:'Obsahuje látku, na kterou reaguješ',pids:[],text:hh.join(', ')+'.'});
+  w.innerHTML=found.length?'<div class="card" style="padding:4px 16px">'+found.map(x=>alertHtml(x.lvl,'<b>'+esc(x.title)+'</b>'+(x.pids.length?' ('+(x.slot==='am'?'ráno':'večer')+'): '+esc(x.pids.filter(i=>i!==tmp.id).map(pname).join(', '))+'. ':': ')+esc(x.text))).join('')+'</div>':'';}
+
+/* ============ SKIN JOURNAL ============ */
+function viewSkin(){
+  const d=S.days[skinDate]||{};const isToday=skinDate===todayStr();
+  let h='';
+  h+='<div class="section" style="display:flex;align-items:center;gap:10px"><button class="iconbtn" data-act="skinPrev" aria-label="Předchozí den"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M15 6l-6 6 6 6"/></svg></button><div style="flex:1;text-align:center"><div class="hero" style="font-size:24px">'+(isToday?'Dnes':esc(fmtLong(skinDate)))+'</div><div class="tiny muted">'+esc(fmtMed(skinDate))+'</div></div><button class="iconbtn" data-act="skinNext" aria-label="Další den" '+(isToday?'disabled style="opacity:.3"':'')+'><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 6l6 6-6 6"/></svg></button></div>';
+  h+='<div class="section"><h3>jak se má <em>pleť</em></h3><div class="cond">'+COND.map(([v,l,f])=>'<button class="'+(d.condition===v?'on':'')+'" data-act="cond" data-v="'+v+'"><span class="f">'+f+'</span>'+l+'</button>').join('')+'</div></div>';
+  h+='<div class="section"><h3>ranní <em>selfie</em></h3>'+(d.selfie?'<div class="selfie"><img alt="Selfie" src="'+esc(d.selfie)+'"></div><div style="display:flex;gap:16px;margin-top:10px"><label class="link" style="position:relative;overflow:hidden">Vyměnit<input type="file" accept="image/*" capture="user" data-change="selfie" style="position:absolute;inset:0;opacity:0"></label><button class="link" data-act="delSelfie">Smazat fotku</button></div>':'<label class="choice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg><div><div class="t">Vyfotit selfie</div><div class="d">Denní světlo u okna, bez make-upu, pokaždé stejné místo. Pak uvidíš vývoj.</div></div><input type="file" accept="image/*" capture="user" data-change="selfie"></label>')+'</div>';
+  const pc=S.profile.concerns||[];const keys=[...pc,...Object.keys(CONCERNS).filter(k=>!pc.includes(k))];
+  h+='<div class="section"><h3>co dnes <em>řešíš</em></h3><div class="chips">'+keys.map(k=>'<button class="chip '+((d.concerns||[]).includes(k)?'on':'')+'" data-act="jTag" data-f="concerns" data-v="'+k+'">'+esc(CONCERNS[k])+'</button>').join('')+'</div></div>';
+  if(cycleOn()){const ci=cycleInfo(skinDate);if(ci&&ci.phase)h+='<div class="section"><p class="small muted" style="margin:0">Cyklus: '+ci.day+'. den · '+esc(PHASES[ci.phase].l)+(ci.late?' · zpoždění '+ci.late+' d':'')+'</p></div>';}
+  h+='<div class="section"><h3>Spánek</h3><div class="stepper"><button data-act="sleep" data-v="-0.5">−</button><div class="v">'+(d.sleep!=null?nf(d.sleep)+' h':'—')+'</div><button data-act="sleep" data-v="0.5">+</button></div></div>';
+  const detN=(d.stress?1:0)+(d.food||[]).length+(d.activity||[]).length+(d.env||[]).length+(d.meds?1:0)+(d.notes?1:0);
+  h+='<div class="section"><button class="btn block" data-act="journalMore">'+(journalMore?'Skrýt detaily':'Víc detailů: stres, strava, aktivita, poznámka'+(detN?' ('+detN+')':''))+'</button></div>';
+  if(journalMore){
+  h+='<div class="section"><h3>Stres</h3><div class="chips">'+[1,2,3,4,5].map(v=>'<button class="chip '+(d.stress===v?'on':'')+'" data-act="stress" data-v="'+v+'">'+['Klid','Mírný','Střední','Vysoký','Extrémní'][v-1]+'</button>').join('')+'</div></div>';
+  const grp=(t,f,obj)=>'<div class="section"><h3>'+t+'</h3><div class="chips">'+Object.entries(obj).map(([k,l])=>'<button class="chip '+((d[f]||[]).includes(k)?'on':'')+'" data-act="jTag" data-f="'+f+'" data-v="'+k+'">'+esc(l)+'</button>').join('')+'</div></div>';
+  h+=grp('Strava','food',FOOD)+grp('Aktivita','activity',ACTIV)+grp('Prostředí','env',ENV);
+  h+='<div class="section"><h3>Léky a doplňky</h3><input type="text" placeholder="např. zinek, omega-3, antibiotika" value="'+esc(d.meds||'')+'" data-input="meds"></div>';
+  h+='<div class="section"><h3>Poznámka</h3><textarea placeholder="Jak pleť reagovala na nový produkt…" data-input="notes">'+esc(d.notes||'')+'</textarea></div>';
+  }
+  h+='<div class="section"><h3>diagnostika <em>s Claudem</em></h3><p class="small muted">Claude zhodnotí selfie'+(d.selfie?'':' (pokud ho přidáš)')+', dnešní záznam a rutinu a navrhne, co upravit ráno a večer.</p><button class="btn dark block" data-act="aiSkin">'+(d.ai?'Analyzovat znovu':'Spustit ranní diagnostiku')+'</button><div id="aiSkinOut" style="margin-top:14px">'+(d.ai?renderSkinAi(d.ai):'')+'</div></div>';
+  return h;
+}
+function mountSkin(){}
+function renderSkinAi(a){const li=x=>(x&&x.length)?'<ul>'+x.map(i=>'<li>'+esc(i)+'</li>').join('')+'</ul>':'';
+  let h='<div class="ai"><div class="k">Ranní diagnostika · Claude</div>';
+  if(a.souhrn)h+='<p>'+esc(a.souhrn)+'</p>';
+  if(a.skore&&typeof a.skore==='object'){const lab={hydratace:'Hydratace',zklidneni:'Klid (bez zarudnutí)',cistota:'Čistota',jas:'Jas'};const ent=Object.entries(lab).filter(([k])=>a.skore[k]!=null);if(ent.length)h+='<div class="scores">'+ent.map(([k,l])=>{const v=Math.max(0,Math.min(5,+a.skore[k]||0));return'<div class="score"><div class="tiny muted">'+l+'</div><div class="n">'+nf(v)+'<span class="small muted"> / 5</span></div><div class="b"><i style="width:'+(v*20)+'%"></i></div></div>';}).join('')+'</div>';}
+  if(a.pozorovani&&a.pozorovani.length)h+='<div class="kicker">Co je vidět</div>'+li(a.pozorovani);
+  if(a.rano&&a.rano.length)h+='<div class="kicker">Ráno</div>'+li(a.rano);
+  if(a.vecer&&a.vecer.length)h+='<div class="kicker">Večer</div>'+li(a.vecer);
+  if(a.vynechat&&a.vynechat.length)h+='<div class="kicker">Dnes vynech</div><p class="small">'+esc(a.vynechat.join(', '))+'</p>';
+  if(a.spf)h+='<div class="kicker">SPF</div><p class="small">'+esc(a.spf)+'</p>';
+  if(a.dermatolog)h+='<p class="small"><b>Kdy k dermatologovi:</b> '+esc(a.dermatolog)+'</p>';
+  return h+'<p class="tiny muted">Orientační odhad, ne lékařská diagnóza.</p></div>';}
+async function runAiSkin(btn){
+  const d=getDay(skinDate);const out=$('#aiSkinOut');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Claude analyzuje…';
+  try{
+    const imgs=[];if(d.selfie){try{imgs.push(dataUrlToBlob(d.selfie));}catch(e){}}
+    const pr=S.profile;const am=scheduledFor(skinDate,'am'),pm=scheduledFor(skinDate,'pm');
+    const pdesc=ps=>ps.map(p=>'- '+(p.brand?p.brand+' ':'')+p.name+' ['+(CATNAME[p.category]||'')+'; látky: '+([...actOf(p)].map(k=>ACTIVES[k].l).join(', ')||'—')+']').join('\n')||'- (nic)';
+    const hist=[1,2,3,4,5].map(i=>{const x=S.days[addDays(skinDate,-i)];return x&&x.condition?addDays(skinDate,-i)+': '+CONDNAME[x.condition]+(x.concerns&&x.concerns.length?' ('+x.concerns.map(c=>CONCERNS[c]).join(', ')+')':''):null;}).filter(Boolean).join('\n')||'žádné záznamy';
+    const uv=uvToday();
+    const prompt='Jsi zkušená kosmetická poradkyně (ne lékařka). Mluv česky, tykej, buď věcná a konkrétní, žádné obecné fráze. '+(imgs.length?'Na fotce je dnešní ranní selfie uživatelky. Zhodnoť viditelný stav pleti (hydratace, zarudnutí, nedokonalosti, jas a textura). Nehádej věk ani nic mimo pleť.':'Fotka není k dispozici, vycházej jen ze záznamu a skóre nevyplňuj (null).')+
+    '\n\nPROFIL: typ pleti '+(SKINTYPE[pr.skinType]||'neuveden')+', citlivost '+(SENS[pr.sens]||'neuvedena')+', hlavní problémy: '+((pr.concerns||[]).map(c=>CONCERNS[c]).join(', ')||'neuvedeny')+', cíle: '+(pr.goals||'neuvedeny')+(allergyText()?', alergie a citlivosti: '+allergyText()+' (nikdy nedoporučuj produkty s těmito látkami)':'')+(((pr.words||[]).filter(Boolean).length)?', 3 slova, která podle ní vystihují její beauty rutinu: '+pr.words.filter(Boolean).join(', ')+' (přizpůsob jim tón a styl doporučení)':'')+
+    '\n\nDNEŠNÍ ZÁZNAM: stav '+(CONDNAME[d.condition]||'nevyplněn')+'; potíže: '+((d.concerns||[]).map(c=>CONCERNS[c]).join(', ')||'žádné')+'; spánek: '+(d.sleep!=null?d.sleep+' h':'?')+'; stres: '+(d.stress||'?')+'/5; strava: '+((d.food||[]).map(k=>FOOD[k]).join(', ')||'—')+'; aktivita: '+((d.activity||[]).map(k=>ACTIV[k]).join(', ')||'—')+'; prostředí: '+((d.env||[]).map(k=>ENV[k]).join(', ')||'—')+'; léky/doplňky: '+(d.meds||'—')+'; poznámka: '+(d.notes||'—')+
+    (()=>{const ci=cycleInfo(skinDate);return ci&&ci.phase?'\n\nCYKLUS: '+ci.day+'. den'+(ci.late?' (zpoždění '+ci.late+' dní)':'')+', fáze: '+PHASES[ci.phase].l+'. Zohledni vliv fáze na pleť.':'';})()+(()=>{const ac=aftercare(skinDate);return ac.length?'\n\nPO ZÁKROKU: '+ac.map(({x,left})=>trName(x)+' dne '+x.date+', ještě '+left+' dní bez silných aktivních látek').join('; '):'';})()+'\n\nPOSLEDNÍ DNY:\n'+hist+'\n\nRUTINA DNES RÁNO:\n'+pdesc(am)+'\n\nRUTINA DNES VEČER:\n'+pdesc(pm)+'\n\nUV: dnešní maximum odhadem '+(Math.round(uv.peak*10)/10)+' ('+uv.l.name+').'+
+    '\n\nOdpověz POUZE validním JSON:\n{"souhrn":"1–2 věty","skore":'+(imgs.length?'{"hydratace":1-5,"zklidneni":1-5 (5 = bez zarudnutí),"cistota":1-5,"jas":1-5}':'null')+',"pozorovani":["max 3 body"],"rano":["max 3 konkrétní tipy k ranní rutině, zmiň produkty jménem"],"vecer":["max 3 konkrétní tipy na večer"],"vynechat":["názvy produktů z rutiny, které dnes raději vynechat, nebo prázdné pole"],"spf":"1 věta","dermatolog":"vyplň jen pokud něco opravdu stojí za konzultaci, jinak prázdný řetězec"}';
+    const v=await askJSON(prompt,imgs);d.ai=v;d.aiAt=new Date().toISOString();saveDay(skinDate,true);out.innerHTML=renderSkinAi(v);btn.textContent='Analyzovat znovu';
+  }catch(e){out.innerHTML='<div class="banner">'+esc(e.message||'Analýza se nepovedla.')+'</div>';btn.textContent='Zkusit znovu';}
+  btn.disabled=false;
+}
+async function runAiRoutine(btn){
+  const out=$('#aiRoutineOut');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Claude prochází rutinu…';
+  try{const pr=S.profile;const lines=activeProducts().map(p=>'- '+(p.brand?p.brand+' ':'')+p.name+' | '+(CATNAME[p.category]||'')+' | '+slotText(p)+', '+freqText(p)+' | látky: '+([...actOf(p)].map(k=>ACTIVES[k].l).join(', ')||'—')+(p.ingredients?' | INCI: '+p.ingredients.slice(0,600):'')).join('\n');
+    const prompt='Jsi zkušená kosmetická poradkyně (ne lékařka). Česky, tykej, konkrétně. Zhodnoť tuto pleťovou rutinu.\nPROFIL: typ '+(SKINTYPE[pr.skinType]||'?')+', citlivost '+(SENS[pr.sens]||'?')+', hlavní problémy: '+((pr.concerns||[]).map(c=>CONCERNS[c]).join(', ')||'?')+', cíle: '+(pr.goals||'?')+(allergyText()?', alergie a citlivosti: '+allergyText()+' (nikdy nedoporučuj produkty s těmito látkami)':'')+(((pr.words||[]).filter(Boolean).length)?', 3 slova, která podle ní vystihují její beauty rutinu: '+pr.words.filter(Boolean).join(', ')+' (přizpůsob jim tón a styl doporučení)':'')+'\nPRODUKTY:\n'+lines+'\n\nOdpověz POUZE validním JSON:\n{"hodnoceni":"2–3 věty","konflikty":[{"produkty":["názvy"],"problem":"…","reseni":"…"}],"poradi_rano":["názvy v pořadí nanášení"],"poradi_vecer":["názvy v pořadí"],"chybi":["max 3 věci, které rutině chybí vzhledem k cílům"],"nadbytecne":["max 2"],"tipy":["max 3"]}';
+    const v=await askJSON(prompt);v.at=todayStr();routineAiOpen=true;S.profile.routineAi=v;saveProfile();out.innerHTML=renderRoutineAi(v);
+  }catch(e){out.innerHTML='<div class="banner">'+esc(e.message||'Analýza se nepovedla.')+'</div>';}
+  btn.disabled=false;btn.textContent='Hloubková analýza rutiny s Claudem';
+}
+
+/* ============ INSIGHTS ============ */
+function viewInsights(){
+  const t=todayStr();const dates=[];for(let i=range-1;i>=0;i--)dates.push(addDays(t,-i));
+  const logged=dates.map(d=>S.days[d]).filter(x=>x&&x.condition);
+  let h='<div class="section"><div class="seg">'+[7,30,90].map(r=>'<button class="'+(range===r?'on':'')+'" data-act="range" data-v="'+r+'">'+r+' dní</button>').join('')+'</div></div>';
+  // adherence
+  let sched=0,done=0;dates.forEach(d=>{if(d>t)return;['am','pm'].forEach(s=>{const l=scheduledFor(d,s);const dd=(S.days[d]||{})[s]||{};sched+=l.length;done+=l.filter(p=>dd[p.id]).length;});});
+  let streak=0;for(let i=0;i<400;i++){const d=S.days[addDays(t,-i)];const any=d&&(Object.values(d.am||{}).some(Boolean)||Object.values(d.pm||{}).some(Boolean)||d.condition);if(any)streak++;else if(i>0)break;}
+  h+='<div class="section"><div class="stats"><div><div class="n">'+(sched?Math.round(done/sched*100)+' %':'—')+'</div><div class="l">rutiny splněno</div></div><div><div class="n">'+streak+'</div><div class="l">dní v řadě</div></div><div><div class="n">'+logged.length+'</div><div class="l">záznamů v deníku</div></div></div></div>';
+  if(!logged.length)return h+'<div class="empty"><div class="serif">Zatím tu nic není</div><div class="small">Vyplňuj denně deník pleti a po pár dnech tu uvidíš, co tvé pleti svědčí.</div><div style="margin-top:14px"><button class="btn" data-act="goto" data-tab="plet">Otevřít deník</button></div></div>';
+  // trend chart
+  h+='<div class="section"><h3>stav pleti <em>v čase</em></h3><div class="card chart">'+trendSvg(dates)+'</div></div>';
+  // distribution
+  h+='<div class="section"><h3>jak se pleť <em>cítila</em></h3><div class="card bars">'+[5,4,3,2,1].map(v=>{const n=logged.filter(x=>x.condition===v).length;const pc=Math.round(n/logged.length*100);return'<div class="bar"><span>'+CONDNAME[v]+'</span><div class="track"><div class="fill" style="width:'+pc+'%"></div></div><span class="pct">'+pc+' %</span></div>';}).join('')+'</div></div>';
+  // concerns
+  const cc={};logged.forEach(x=>(x.concerns||[]).forEach(c=>cc[c]=(cc[c]||0)+1));const top=Object.entries(cc).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  h+='<div class="section"><h3>top 5 <em>potíží</em></h3><div class="card bars">'+(top.length?top.map(([k,n])=>{const pc=Math.round(n/logged.length*100);return'<div class="bar"><span>'+esc(CONCERNS[k])+'</span><div class="track"><div class="fill" style="width:'+pc+'%"></div></div><span class="pct">'+pc+' %</span></div>';}).join('')+'<p class="tiny muted" style="margin:8px 0 0">Podíl zapsaných dní, kdy se potíž objevila.</p>':'<p class="small muted" style="margin:0">Žádné potíže zapsané. Paráda.</p>')+'</div></div>';
+  if(cycleOn()){const by={};logged.forEach(x=>{const ci=cycleInfo(x.date);if(ci&&ci.phase){(by[ci.phase]=by[ci.phase]||[]).push(x);}});const ks=Object.keys(PHASES).filter(k=>by[k]&&by[k].length>=2);
+    h+='<div class="section"><h3>pleť <em>a cyklus</em></h3><div class="card bars">'+(ks.length?ks.map(k=>{const a=by[k].reduce((s,x)=>s+x.condition,0)/by[k].length;const cc={};by[k].forEach(x=>(x.concerns||[]).forEach(c=>cc[c]=(cc[c]||0)+1));const top=Object.entries(cc).sort((a,b)=>b[1]-a[1])[0];return'<div class="bar" style="grid-template-columns:110px 1fr 44px"><span>'+esc(PHASES[k].l)+'</span><div class="track"><div class="fill" style="width:'+Math.round(a/5*100)+'%"></div></div><span class="pct">'+nf(a)+'</span></div>'+(top?'<p class="tiny muted" style="margin:-4px 0 8px 120px">nejčastěji: '+esc(CONCERNS[top[0]]||'')+'</p>':'');}).join('')+'<p class="tiny muted" style="margin:8px 0 0">Průměrný stav pleti (1–5) v jednotlivých fázích.</p>':'<p class="small muted" style="margin:0">Až budeš mít zápisy z více fází cyklu, ukážu, jak se pleť v každé z nich chová.</p>')+'</div></div>';}
+  // factor insights
+  const ins=factorInsights(logged);
+  h+='<div class="section"><h3>co pleti <em>svědčí</em></h3><div class="card" style="padding:4px 16px">'+(ins.length?ins.map(i=>alertHtml(i.diff>0?'good':'warn',esc(i.text))).join(''):alertHtml('info','Na souvislosti potřebuju víc dat: aspoň 3 dny s daným faktorem a 3 bez něj.'))+'</div></div>';
+  // product usage
+  const use={};dates.forEach(d=>{const x=S.days[d];if(!x)return;['am','pm','extra'].forEach(s=>Object.entries(x[s]||{}).forEach(([id,v])=>{if(v)use[id]=(use[id]||0)+1;}));});
+  const tu=Object.entries(use).filter(([id])=>S.products[id]).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  if(tu.length){const mx=tu[0][1];h+='<div class="section"><h3>nejpoužívanější <em>produkty</em></h3><div class="card bars">'+tu.map(([id,n])=>'<div class="bar" style="grid-template-columns:120px 1fr 34px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(pname(id))+'</span><div class="track"><div class="fill" style="width:'+Math.round(n/mx*100)+'%"></div></div><span class="pct">'+n+'×</span></div>').join('')+'</div></div>';}
+  // photos
+  const ph=dates.slice().reverse().filter(d=>S.days[d]&&S.days[d].selfie);
+  if(ph.length)h+='<div class="section"><h3>vývoj <em>na fotkách</em></h3><div class="photos">'+ph.map(d=>'<button data-act="photo" data-d="'+d+'"><img alt="" src="'+esc(S.days[d].selfie)+'"><span>'+fmtShort(d)+'</span></button>').join('')+'</div></div>';
+  // history
+  h+='<div class="section daylist"><h3><em>historie</em></h3><div class="card" style="padding:0 16px">'+dates.slice().reverse().filter(d=>S.days[d]).slice(0,30).map(d=>{const x=S.days[d];const a=Object.values(x.am||{}).filter(Boolean).length,p=Object.values(x.pm||{}).filter(Boolean).length;return'<div class="row" data-act="openDay" data-d="'+d+'"><div class="grow"><div class="title">'+esc(fmtLong(d))+'</div><div class="sub">'+esc((x.condition?CONDNAME[x.condition]:'Bez check-inu')+' · ráno '+a+' · večer '+p+((x.concerns||[]).length?' · '+x.concerns.map(c=>CONCERNS[c]).join(', '):''))+'</div></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#857F78" stroke-width="1.6"><path d="M9 6l6 6-6 6"/></svg></div>';}).join('')+'</div></div>';
+  return h;
+}
+function trendSvg(dates){
+  const W=340,H=150,L=28,R=8,T=10,B=24;const n=dates.length;const x=i=>L+(n<=1?0:i*(W-L-R)/(n-1));const y=v=>T+(5-v)*(H-T-B)/4;
+  let s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Stav pleti v čase">';
+  [1,2,3,4,5].forEach(v=>{s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="#ECE7E0" stroke-width="1"/><text x="'+(L-8)+'" y="'+(y(v)+3.5)+'" font-size="9" text-anchor="end" fill="#857F78">'+v+'</text>';});
+  let seg=[];const segs=[];dates.forEach((d,i)=>{const c=S.days[d]&&S.days[d].condition;if(c)seg.push([x(i),y(c),d,c]);else if(seg.length){segs.push(seg);seg=[];}});if(seg.length)segs.push(seg);
+  segs.forEach(sg=>{if(sg.length>1)s+='<polyline fill="none" stroke="#8E2F23" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="'+sg.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')+'"/>';});
+  segs.flat().forEach(p=>{s+='<g><circle cx="'+p[0]+'" cy="'+p[1]+'" r="12" fill="transparent"><title>'+fmtShort(p[2])+': '+CONDNAME[p[3]]+'</title></circle><circle cx="'+p[0]+'" cy="'+p[1]+'" r="4" fill="#8E2F23" stroke="#fff" stroke-width="2" pointer-events="none"/></g>';});
+  const ticks=n<=7?dates.map((d,i)=>i):[0,Math.floor((n-1)/2),n-1];ticks.forEach(i=>{s+='<text x="'+x(i)+'" y="'+(H-6)+'" font-size="9" text-anchor="'+(i===0?'start':i===n-1?'end':'middle')+'" fill="#857F78">'+fmtShort(dates[i])+'</text>';});
+  return s+'</svg><p class="tiny muted" style="margin:6px 0 0">5 = skvělá, 1 = hrozná</p>';
+}
+function factorInsights(logged){
+  const fs=[];const avg=a=>a.reduce((s,x)=>s+x.condition,0)/a.length;
+  const test=(label,pred)=>{const w=logged.filter(pred),wo=logged.filter(x=>!pred(x));if(w.length>=3&&wo.length>=3){const diff=avg(w)-avg(wo);if(Math.abs(diff)>=0.4)fs.push({diff,text:label+': pleť v průměru o '+nf(Math.abs(diff))+' bodu '+(diff>0?'lepší':'horší')+' (dní: '+w.length+').'});}};
+  test('Spánek 7 h a víc',x=>x.sleep!=null&&x.sleep>=7);
+  test('Vysoký stres',x=>x.stress>=4);
+  Object.entries(FOOD).forEach(([k,l])=>test(l,x=>(x.food||[]).includes(k)));
+  Object.entries(ACTIV).forEach(([k,l])=>test(l,x=>(x.activity||[]).includes(k)));
+  Object.entries(ENV).forEach(([k,l])=>test(l,x=>(x.env||[]).includes(k)));
+  return fs.sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff)).slice(0,6);
+}
+
+/* ============ PROFILE ============ */
+function viewProfile(){
+  const p=S.profile;let h='';
+  if(loadNote)h+='<div class="banner">'+esc(loadNote)+'</div>';
+  h+='<div class="section"><h3>o <em>tobě</em></h3><label class="lbl" style="margin-top:0">Jméno</label><input type="text" value="'+esc(p.name||'')+'" data-pinput="name" placeholder="Jak ti mám říkat?"></div>';
+  {const w=(p.words||[]).slice(0,3);while(w.length<3)w.push('');const full=w.every(Boolean);const edit=wordsEdit||!w.some(Boolean);
+   h+='<div class="section"><h3>tvoje <em>3 beauty slova</em></h3>';
+   if(!edit){h+='<div class="chips">'+w.filter(Boolean).map(x=>'<span class="chip on" style="font-size:15px;padding:11px 18px">'+esc(x)+'</span>').join('')+'</div><div style="display:flex;gap:18px;margin-top:14px"><button class="link" data-act="wordsEdit">Změnit</button><button class="link" data-act="quizStart">Udělat kvíz</button></div>';}
+   else{h+='<p class="small muted">Tři slova, která nejlépe vystihují tvoji beauty rutinu. Claude podle nich ladí doporučení. Nevíš? <button class="link" data-act="quizStart">Udělej si krátký kvíz</button>.</p>'+
+   '<div class="grid2" style="grid-template-columns:1fr 1fr 1fr;margin-top:10px">'+w.map((x,i)=>'<input type="text" maxlength="24" placeholder="'+(i+1)+'." value="'+esc(x)+'" data-word="'+i+'">').join('')+'</div>'+
+   '<div class="chips" style="margin-top:12px">'+WORDS.filter(x=>!w.map(y=>y.toLowerCase()).includes(x.toLowerCase())).map(x=>'<button class="chip" data-act="addWord" data-v="'+esc(x)+'">'+esc(x)+'</button>').join('')+'</div>'+
+   (w.some(Boolean)?'<button class="btn sm" style="margin-top:14px" data-act="wordsDone">'+(full?'Hotovo':'Uložit')+'</button>':'');}
+   h+='</div>';}
+  h+='<div class="section"><h3><em>pohlaví</em></h3><div class="chips">'+Object.entries(GENDER).map(([k,l])=>'<button class="chip '+(p.gender===k?'on':'')+'" data-act="pSet" data-f="gender" data-v="'+k+'">'+l+'</button>').join('')+'</div>';
+  if(p.gender==='zena'){h+='<div class="chips" style="margin-top:14px"><button class="chip '+(p.cycleOn!==false?'on':'')+'" data-act="cycleToggle">Sledovat cyklus a jeho vliv na pleť</button></div>';
+    if(p.cycleOn!==false){const st=periodStarts().slice(-4).reverse();const cl=cycleLength();
+      h+='<label class="lbl">Začátky menstruace</label>'+(st.length?'<div class="chips">'+st.map(d=>'<span class="chip">'+fmtShort(d)+' <button class="link" style="margin-left:6px;text-decoration:none" data-act="pDel" data-v="'+d+'" aria-label="Smazat">×</button></span>').join('')+'</div>':'<p class="small muted">Zatím žádný.</p>')+'<label class="lbl">Přidat nebo opravit začátek</label><div style="display:flex;gap:8px"><input type="date" id="pAddDate" max="'+todayStr()+'" value="'+todayStr()+'" style="flex:1"><button class="btn sm dark" data-act="pAddSave">Přidat</button></div><p class="tiny muted" style="margin-top:6px">Chybné datum smaž křížkem a přidej správné.</p>';
+      h+='<div class="grid2"><div><label class="lbl">Délka cyklu (dny)</label><input type="number" min="20" max="45" value="'+esc(p.cycleLen||28)+'" data-pinput="cycleLen"'+(cl.learned?' disabled':'')+'></div><div><label class="lbl">Délka menstruace</label><input type="number" min="2" max="10" value="'+esc(p.periodLen||5)+'" data-pinput="periodLen"></div></div>'+(cl.learned?'<p class="small" style="margin-top:8px">Tvůj průměrný cyklus: <b>'+cl.L+' dní</b> (spočítáno z '+(cl.n+1)+' zaznamenaných začátků).</p>':'')+'<p class="tiny muted" style="margin-top:8px">Stačí zaznamenat první den menstruace. Appka pak počítá fáze, upozorní na zpoždění a z dalších cyklů se naučí tvoji délku cyklu. Je to orientační odhad. Údaje zůstávají jen ve tvém soukromém úložišti.</p>';}}
+  h+='</div>';
+  h+='<div class="section"><h3>typ <em>pleti</em></h3><div class="chips">'+Object.entries(SKINTYPE).map(([k,l])=>'<button class="chip '+(p.skinType===k?'on':'')+'" data-act="pSet" data-f="skinType" data-v="'+k+'">'+l+'</button>').join('')+'</div><label class="lbl">Citlivost</label><div class="chips">'+Object.entries(SENS).map(([k,l])=>'<button class="chip '+(p.sens===k?'on':'')+'" data-act="pSet" data-f="sens" data-v="'+k+'">'+l+'</button>').join('')+'</div></div>';
+  {const al=p.allergies||[];const hits=activeProducts().map(x=>[x,allergyHits(x)]).filter(x=>x[1].length);
+   h+='<div class="section"><h3>alergie <em>a citlivosti</em></h3><p class="small muted">Na co tvoje pleť reaguje? Appka tyto látky hledá ve složení tvých produktů a upozorní tě.</p><div class="chips">'+Object.entries(ALLERG).map(([k,v])=>'<button class="chip '+(al.includes(k)?'on':'')+'" data-act="pAllerg" data-v="'+k+'">'+esc(v.l)+'</button>').join('')+'</div><label class="lbl">Další látky (oddělené čárkou)</label><input type="text" placeholder="např. niacinamide, kokosový olej, cetearyl alcohol" value="'+esc(p.allergyText||'')+'" data-pinput="allergyText">'+
+   (hits.length?'<div class="card" style="padding:4px 16px;margin-top:14px">'+hits.map(([x,hh])=>alertHtml('bad','<b>'+esc(x.name)+'</b> obsahuje: '+esc(hh.join(', ')))).join('')+'</div>':'')+
+   '<p class="tiny muted" style="margin-top:8px">Hledá se jen ve složení (INCI), které má produkt vyplněné. Nenahrazuje alergologické vyšetření.</p></div>';}
+  h+='<div class="section"><h3>hlavní <em>problémy</em> pleti</h3><div class="chips">'+Object.entries(CONCERNS).map(([k,l])=>'<button class="chip '+((p.concerns||[]).includes(k)?'on':'')+'" data-act="pConcern" data-v="'+k+'">'+esc(l)+'</button>').join('')+'</div><label class="lbl">Cíle</label><textarea data-pinput="goals" placeholder="např. sjednotit tón, méně zarudnutí, prevence vrásek">'+esc(p.goals||'')+'</textarea></div>';
+  h+='<div class="section"><h3>poloha <em>pro UV</em></h3><select data-pchange="city">'+Object.entries(CITIES).map(([k,c])=>'<option value="'+k+'" '+((p.city||'praha')===k?'selected':'')+'>'+c[0]+'</option>').join('')+'<option value="vlastni" '+(p.city==='vlastni'?'selected':'')+'>Vlastní souřadnice</option></select>'+(p.city==='vlastni'?'<div class="grid2" style="margin-top:10px"><input type="text" placeholder="Název" value="'+esc(p.cityName||'')+'" data-pinput="cityName"><span></span><input type="number" step="0.01" placeholder="Šířka (50.08)" value="'+esc(p.lat??'')+'" data-pinput="lat"><input type="number" step="0.01" placeholder="Délka (14.42)" value="'+esc(p.lon??'')+'" data-pinput="lon"></div>':'')+'</div>';
+  h+='<div class="section"><h3><em>účet</em></h3><p class="small">Přihlášena jako <b>'+esc(USER&&USER.email||'')+'</b></p><p class="small muted">'+Object.keys(S.products).length+' produktů · '+Object.keys(S.days).length+' dní v deníku · '+Object.keys(S.treatments).length+' procedur</p><div class="chips" style="margin-top:12px"><button class="chip" data-act="export">Zkopírovat zálohu</button><button class="chip" data-act="importOpen">Nahrát zálohu</button><button class="chip" data-act="obAgain">Úvodní nastavení znovu</button></div><div style="display:flex;gap:10px;margin-top:18px"><button class="btn" style="flex:1" data-act="logout">Odhlásit se</button><button class="btn danger" style="flex:1" data-act="delAccount">Smazat účet</button></div><p class="tiny muted" style="margin-top:10px"><a class="link" href="soukromi.html" target="_blank" rel="noopener">Zásady ochrany osobních údajů</a></p></div>';
+  h+='<p class="tiny muted">Rituál dává orientační kosmetická doporučení, nenahrazuje dermatologa.</p>';
+  return h;
+}
+
+/* ============ events ============ */
+document.addEventListener('click',async ev=>{
+  const el=ev.target.closest('[data-act]');if(!el)return;const a=el.dataset.act;
+  if(el.tagName==='LABEL'||el.querySelector?.('input[type=file]')&&el.classList.contains('choice')&&a!=='manualProduct')return;
+  const t=todayStr();
+  switch(a){
+    case'aLogin':{const em=($('#aEmail').value||'').trim(),pw=$('#aPass').value||'';if(!em||!pw){$('#aMsg').textContent='Vyplň e-mail a heslo.';break;}el.disabled=true;const {data,error}=await SB.auth.signInWithPassword({email:em,password:pw});el.disabled=false;if(error){$('#aMsg').textContent=AUTHERR(error.message);break;}USER=data.user;await startApp();break;}
+    case'aLink':{const em=($('#aEmail').value||'').trim();if(!em){$('#aMsg').textContent='Nejdřív napiš svůj e-mail do prvního pole.';break;}el.disabled=true;const {error}=await SB.auth.resetPasswordForEmail(em,{redirectTo:location.origin+location.pathname});el.disabled=false;$('#aMsg').textContent=error?AUTHERR(error.message):'Pokud máš účet, odkaz je na cestě. Když nepřijde do pár minut, mrkni do spamu.';break;}
+    case'aSetPw':{const a1=$('#aNew').value,a2=$('#aNew2').value;if(a1.length<8){$('#aMsg').textContent='Heslo musí mít aspoň 8 znaků.';break;}if(a1!==a2){$('#aMsg').textContent='Hesla se neshodují.';break;}el.disabled=true;const {error}=await SB.auth.updateUser({password:a1});el.disabled=false;if(error){$('#aMsg').textContent=AUTHERR(error.message);break;}window.__URL_TYPE='';toast('Heslo uloženo');await startApp();break;}
+    case'logout':await SB.auth.signOut();location.hash='';location.reload();break;
+    case'delAccount':{if(el.dataset.confirm!=='1'){el.dataset.confirm='1';el.textContent='Opravdu? Smaže vše';toast('Ťukni znovu pro trvalé smazání účtu a všech dat');break;}el.disabled=true;try{await api('/api/account',{method:'DELETE'});await SB.auth.signOut();location.hash='';location.reload();}catch(e){toast(e.message);el.disabled=false;}break;}
+    case'obAgain':OB={step:-1};obRender();break;
+    case'importOpen':openSheet('Nahrát zálohu','<p class="small muted">Vlož zálohu zkopírovanou z profilu (i ze staré verze appky v Claudovi). Existující produkty se stejným ID se přepíšou.</p><textarea id="impTxt" style="min-height:180px" placeholder="{&quot;profile&quot;:…}"></textarea><button class="btn dark block" style="margin-top:14px" data-act="importRun">Nahrát</button>');break;
+    case'importRun':{let o;try{o=JSON.parse($('#impTxt').value);}catch(e){toast('Záloha není platný JSON');break;}el.disabled=true;el.innerHTML='<span class="spinner"></span> Nahrávám…';
+      if(o.profile){S.profile=Object.assign({},o.profile,S.profile.consentAt?{consentAt:S.profile.consentAt}:{} );S.profile.onboarded=true;saveProfile();}
+      Object.values(o.products||{}).forEach(p=>p&&p.id&&saveProduct(p));Object.values(o.treatments||{}).forEach(x=>x&&x.id&&saveTreatment(x));Object.entries(o.days||{}).forEach(([d,x])=>{if(x){S.days[d]=x;saveDay(d,true);}});
+      await Promise.all(Object.values(chains));closeSheet();render();toast('Záloha nahrána');break;}
+    case'goto':closeSheet();goto(el.dataset.tab);break;
+    case'closeSheet':closeSheet();if(OB)document.body.style.overflow='hidden';break;
+    case'slot':todaySlot=el.dataset.v;render();break;
+    case'cloud':{const d=getDay(t);d.cloud=el.dataset.v;saveDay(t,true);render();break;}
+    case'snow':{const d=getDay(t);d.snow=!d.snow;saveDay(t,true);render();break;}
+    case'toggleDone':{const d=getDay(t);const id=el.dataset.id;d[todaySlot][id]=!d[todaySlot][id];if(!d[todaySlot][id])delete d[todaySlot][id];saveDay(t);render();break;}
+    case'extraDone':{const d=getDay(t);d.extra=d.extra||{};const id=el.dataset.id;if(d.extra[id])delete d.extra[id];else{d.extra[id]=true;const p=S.products[id];const iss=p?todayIssues(t).filter(x=>x.pids.includes(id)&&x.lvl!=='info'):[];if(iss.length)toast('Pozor: '+iss[0].title.toLowerCase());}saveDay(t,true);render();break;}
+    case'allDone':{const d=getDay(t);scheduledFor(t,todaySlot).forEach(p=>d[todaySlot][p.id]=true);saveDay(t,true);render();toast('Rutina hotová ✓');break;}
+    case'addProduct':if(tab==='produkty'&&prodTab==='tr'){openTreatment({id:uid(),type:'osetreni',date:todayStr(),pause:2},true);}else addProductStart();break;
+    case'linkProduct':openSheet('Produkt z e-shopu','<label class="lbl" style="margin-top:0">Odkaz</label><input type="text" inputmode="url" id="lUrl" placeholder="https://www.notino.cz/…"><label class="lbl">Screenshot stránky (doporučeno)</label><label class="choice" style="margin:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 18h4"/></svg><div><div class="t" id="lShotT">Přidat screenshot</div><div class="d">Claude z něj přečte značku a název a vezme z něj i fotku produktu</div></div><input type="file" accept="image/*" multiple id="lShot" data-change="lShot"></label><label class="lbl">Text ze stránky (volitelně)</label><textarea id="lText" placeholder="Zkopíruj název, popis a hlavně složení / Ingredients. Čím víc, tím přesnější výsledek." style="min-height:130px"></textarea><p class="tiny muted" style="margin-top:8px">Appka zkusí stránku načíst. Některé e-shopy načtení blokují, pak pomůže screenshot nebo vložený text. Fotku přidáš v dalším kroku, stačí i screenshot z e-shopu.</p><button class="btn dark block" style="margin-top:14px" data-act="linkParse">Načíst produkt</button><div id="addStatus" class="small" style="margin-top:10px"></div>');break;
+    case'linkParse':{const url=($('#lUrl').value||'').trim(),txt=($('#lText').value||'').trim();const shots=Array.from(($('#lShot')||{}).files||[]).slice(0,3);if(!url&&!txt&&!shots.length){toast('Vlož odkaz, screenshot nebo text');break;}el.disabled=true;el.innerHTML='<span class="spinner"></span> Claude čte…';
+      try{const hints=urlHints(url);let page=null;if(url&&/^https?:\/\//i.test(url)){try{page=await api('/api/page?url='+encodeURIComponent(url));}catch(e){}}const loadedShots=[];const blobs=[];for(const f of shots){const l=await loadImg(f);loadedShots.push(l);blobs.push(await toBlob(scaled(l.img,1400)));}const v=await askJSON('Jsi expert na kosmetiku. Uživatelka chce přidat pleťový produkt. Máš ODKAZ na e-shop (stránku nevidíš, jen adresu) a případně TEXT zkopírovaný ze stránky.\nODKAZ: '+(url||'—')+'\nE-SHOP: '+(hints.host||'—')+'\nČÁSTI ADRESY: '+(hints.segs.join(' | ')||'—')+'\nZnačka bývá v adrese nebo na začátku názvu (např. notino.cz/<značka>/<produkt>/). Značku VŽDY vyplň zvlášť a z názvu ji odstraň. Pokud doména není multibrandový e-shop, je značkou nejspíš doména samotná (např. embryolisse.cz → Embryolisse). Do názvu dej jen oficiální název produktu, bez popisků za pomlčkou. E-shopy někdy produkt přejmenují; pokud na screenshotu vidíš obal, použij název z obalu (např. Hydrating Milky Toner).'+(blobs.length?'\nPřiložené obrázky jsou SCREENSHOTY stránky e-shopu: značka je obvykle nad názvem produktu. Údaje ze screenshotu mají přednost.':'')+(page?'\nSTRÁNKA (načtená serverem): titulek: '+(page.title||'—')+(page.brand?'; značka: '+page.brand:'')+'\n'+String(page.text||'').slice(0,7000):'')+'\nTEXT:\n'+(txt.slice(0,6000)||'—')+'\n\nZjisti produkt. Odpověz POUZE validním JSON:\n{"name":"název bez značky","brand":"značka","category":"jeden klíč z: '+CATS.map(c=>c[0]).join(', ')+'","ingredients":"INCI jen pokud je v TEXTU nebo na načtené STRÁNCE, jinak prázdný řetězec","ingredients_known":"pokud INCI v textu není a tento KONKRÉTNÍ produkt spolehlivě znáš, jeho INCI ze znalostí, jinak prázdný řetězec","actives":["klíče z: '+Object.keys(ACTIVES).join(', ')+'"],"pao_months":číslo nebo null,"slot":"am|pm|both","notes":"krátká česká poznámka k použití, max 1 věta","jistota":"vysoka|stredni|nizka (jak jistě víš, o jaký produkt jde)","bbox":'+(blobs.length?'[x0,y0,x1,y1] ohraničení fotky samotného produktu (lahvičky/tuby) na PRVNÍM screenshotu jako zlomky 0–1, nebo null':'null')+'}',blobs);
+        if(!v.name&&!v.brand&&!hints.segs.length&&!shots.length&&!page){$('#addStatus').textContent='Z odkazu se nepodařilo poznat produkt. Vlož i text ze stránky, nebo vyplň údaje ručně.';el.disabled=false;el.textContent='Načíst produkt';break;}
+        const p=blankProduct({url});p.name=String(v.name||'').trim();p.brand=String(v.brand||'').trim();
+        if(!p.brand)p.brand=brandFromHost(hints.host);
+        if(!p.brand){const cand=hints.segs.find(x=>!GENERIC.test(x));if(cand&&hints.segs.length>=2&&cand!==hints.segs[hints.segs.length-1])p.brand=titleCase(cand);}
+        if(p.brand&&p.name.toLowerCase().startsWith(p.brand.toLowerCase()+' '))p.name=p.name.slice(p.brand.length+1).trim();
+        p.name=p.name.split(/\s+[–—-]\s+/)[0].trim();
+        if(!p.name&&hints.segs.length)p.name=titleCase(hints.segs[hints.segs.length-1]);if(CATNAME[v.category])p.category=v.category;
+        if(v.ingredients){p.ingredients=String(v.ingredients);p.ingSource='web';}else if(v.ingredients_known){p.ingredients=String(v.ingredients_known);p.ingSource='znalosti';}
+        p.actives=[...new Set([...(Array.isArray(v.actives)?v.actives.filter(k=>ACTIVES[k]):[]),...detectActives(p.ingredients)])];
+        if(v.pao_months&&+v.pao_months>0)p.pao=String(+v.pao_months);
+        if(['maska','pristroj','peeling'].includes(p.category)){p.any=true;p.am=false;p.pm=false;p.freq.type='asneeded';}else if(v.slot==='am'){p.am=true;p.pm=false;}else if(v.slot==='both'){p.am=true;p.pm=true;}if(p.category==='spf'){p.am=true;p.pm=false;}
+        if(v.notes)p.notes=String(v.notes);
+        if(loadedShots.length&&Array.isArray(v.bbox)){try{setVariants(p,loadedShots[0].img,v.bbox);}catch(e){}}
+        loadedShots.forEach(l=>URL.revokeObjectURL(l.url));if(!p.photo&&page&&page.image)p.photo=page.image;
+        const ex=Object.values(S.products).find(x=>x.name&&x.name.toLowerCase()===p.name.toLowerCase()&&(x.brand||'').toLowerCase()===p.brand.toLowerCase());
+        if(ex){toast('Tenhle produkt už máš');openProduct(ex.id);break;}
+        F=p;openForm(true);toast(v.jistota==='nizka'?'Nejsem si jistá produktem, zkontroluj údaje':'Hotovo. Zkontroluj údaje a přidej fotku');
+      }catch(e){$('#addStatus').textContent=e.message||'Nepovedlo se.';el.disabled=false;el.textContent='Načíst produkt';}break;}
+    case'manualProduct':if(!F)F=blankProduct();openForm(true);break;
+    case'openProduct':openProduct(el.dataset.id);break;
+    case'prodView':prodView=prodView==='grid'?'list':'grid';render();break;
+    case'fKnown':{readForm();if(!F.name){toast('Nejdřív doplň název');break;}el.innerHTML='<span class="spinner"></span> Hledám ve znalostech…';try{const v=await askJSON('Jsi expert na kosmetické složení. Produkt: "'+(F.brand||'')+' '+F.name+'" ('+(CATNAME[F.category]||'')+'). Pokud tento KONKRÉTNÍ produkt spolehlivě znáš, napiš jeho INCI. Když si nejsi jistý, nevymýšlej. Odpověz POUZE JSON: {"ingredients":"INCI nebo prázdný řetězec","actives":["klíče z: '+Object.keys(ACTIVES).join(', ')+'"],"jistota":"vysoka|stredni|nizka"}');if(v.ingredients&&v.jistota!=='nizka'){F.ingredients=String(v.ingredients);F.ingSource='znalosti';F.actives=[...new Set([...(F.actives||[]),...(Array.isArray(v.actives)?v.actives.filter(k=>ACTIVES[k]):[]),...detectActives(F.ingredients)])];const sc=$('.sheet-panel').scrollTop;openForm(F._new);$('.sheet-panel').scrollTop=sc;toast('Složení doplněno, ověř ho');}else{toast('Tenhle produkt Claude spolehlivě nezná. Zkus INCIDecoder.');el.textContent='Doplnit složení s Claudem';}}catch(e){toast(e.message||'Nepovedlo se');el.textContent='Doplnit složení s Claudem';}break;}
+    case'raToggle':routineAiOpen=!routineAiOpen;try{localStorage.setItem('ritual_raopen',routineAiOpen?'1':'0');}catch(e){}{const o=$('#aiRoutineOut');if(o&&S.profile.routineAi)o.innerHTML=renderRoutineAi(S.profile.routineAi);}break;
+    case'fPhotoMode':{readForm();if(F&&F._var&&F._var[el.dataset.v]){F._mode=el.dataset.v;F.photo=F._var[F._mode];const sc=$('.sheet-panel').scrollTop;openForm(F._new);$('.sheet-panel').scrollTop=sc;}break;}
+    case'cycleToggle':S.profile.cycleOn=S.profile.cycleOn===false;saveProfile();render();break;
+    case'pStart':{addPeriodStart(el.dataset.v);render();toast('Zaznamenáno: '+fmtShort(el.dataset.v));break;}
+    case'pOther':pOtherOpen=!pOtherOpen;render();break;
+    case'pOtherSave':{const v=($('#pOtherDate')||{}).value;if(!v){toast('Vyber datum');break;}if(v>t){toast('Datum nemůže být v budoucnu');break;}addPeriodStart(v);pOtherOpen=false;render();toast('Zaznamenáno: '+fmtShort(v));break;}
+    case'pAddSave':{const v=($('#pAddDate')||{}).value;if(!v){toast('Vyber datum');break;}if(v>t){toast('Datum nemůže být v budoucnu');break;}addPeriodStart(v);render();toast('Zaznamenáno: '+fmtShort(v));break;}
+    case'dismiss':{const d=getDay(t);d.dismissed=[...new Set([...(d.dismissed||[]),el.dataset.k])];saveDay(t,true);render();toast('Skryto do zítřka');break;}
+    case'obSet':{const n=$('#obName');if(n)S.profile.name=n.value.trim();S.profile[el.dataset.f]=el.dataset.v;obRender();break;}
+    case'obConcern':{const s2=new Set(S.profile.concerns||[]);const v=el.dataset.v;s2.has(v)?s2.delete(v):s2.add(v);S.profile.concerns=[...s2];el.classList.toggle('on',s2.has(v));break;}
+    case'obWord':{let w=(S.profile.words||[]).filter(Boolean);const v=el.dataset.v;if(w.includes(v))w=w.filter(x=>x!==v);else if(w.length<3)w.push(v);else{toast('Už máš 3 slova');break;}S.profile.words=w;obRender();break;}
+    case'obQuiz':Q={i:0,ans:[],ob:true};quizRender();break;
+    case'obNext':{const n=$('#obName');if(n)S.profile.name=n.value.trim();const cs=$('#obConsent');if(cs){if(!cs.checked){toast('Pro pokračování potřebuju tvůj souhlas');break;}if(!S.profile.consentAt)S.profile.consentAt=new Date().toISOString();}OB.step++;saveProfile();obRender();break;}
+    case'obBack':OB.step=Math.max(-1,OB.step-1);obRender();break;
+    case'obDone':obFinish();closeSheet();render();break;
+    case'obProduct':obFinish();addProductStart();render();break;
+    case'journalMore':journalMore=!journalMore;render();break;
+    case'alertsAll':alertsAll=!alertsAll;render();break;
+    case'pNotYet':S.profile.notYet=t;saveProfile();render();break;
+    case'pDel':{const v=el.dataset.v;S.profile.periodStarts=(S.profile.periodStarts||[]).filter(x=>x!==v);if(S.profile.lastPeriod===v)S.profile.lastPeriod='';Object.keys(S.days).forEach(k=>{if(S.days[k]&&S.days[k].period&&diffDays(k,v)>=0&&diffDays(k,v)<=7){delete S.days[k].period;saveDay(k,true);}});saveProfile();render();break;}
+    case'addWord':{const w=(S.profile.words||[]).slice(0,3);while(w.length<3)w.push('');const i=w.findIndex(x=>!x);if(i<0){toast('Už máš 3 slova, nejdřív jedno smaž');break;}w[i]=el.dataset.v;S.profile.words=w;if(w.every(Boolean))wordsEdit=false;saveProfile();render();break;}
+    case'wordsEdit':wordsEdit=true;render();break;
+    case'wordsDone':wordsEdit=false;saveProfile();render();break;
+    case'quizStart':Q={i:0,ans:[]};quizRender();break;
+    case'quizAns':Q.ans[Q.i]=+el.dataset.j;Q.i++;quizRender();break;
+    case'quizBack':Q.i=Math.max(0,Q.i-1);quizRender();break;
+    case'quizUse':{const ob=Q&&Q.ob;S.profile.words=Q.top.slice();saveProfile();Q=null;wordsEdit=false;closeSheet();if(ob&&OB){document.body.style.overflow='hidden';obRender();}else render();toast('Uloženo');break;}
+    case'prodTab':prodTab=el.dataset.v;render();break;
+    case'openTr':{const x=S.treatments[el.dataset.id];if(x)openTreatment(x,false);break;}
+    case'tReact':{readTr();const v=+el.dataset.v;T.reaction=T.reaction===v?null:v;$$('[data-act=tReact]').forEach(b=>b.classList.toggle('on',+b.dataset.v===T.reaction));break;}
+    case'saveTr':{readTr();if(!T.date){toast('Doplň datum');break;}const x=clone(T);const isNew=x._new;delete x._new;saveTreatment(x);
+      if(x.date<=t){const d=getDay(x.date);const a=new Set(d.activity||[]);a.add('procedura');d.activity=[...a];saveDay(x.date,true);}
+      if(isNew&&x.repeat&&+x.repeat>0){const nd=addDays(x.date,Math.round(+x.repeat*7));if(nd>t&&!trList().some(y=>y.type===x.type&&y.date===nd)){saveTreatment({id:uid(),type:x.type,custom:x.custom,date:nd,place:x.place,pause:x.pause,repeat:x.repeat});toast('Uloženo i s dalším termínem '+fmtShort(nd));}else toast('Uloženo');}else toast('Uloženo');
+      T=null;closeSheet();render();break;}
+    case'delTr':{if(el.dataset.confirm!=='1'){el.dataset.confirm='1';el.textContent='Opravdu smazat?';break;}removeTreatment(T.id);T=null;closeSheet();render();toast('Smazáno');break;}
+    case'pAllerg':{const s2=new Set(S.profile.allergies||[]);const v=el.dataset.v;s2.has(v)?s2.delete(v):s2.add(v);S.profile.allergies=[...s2];saveProfile();render();break;}
+    case'fAllAct':{readForm();showAllAct=!showAllAct;const sc=$('.sheet-panel').scrollTop;openForm(F._new);$('.sheet-panel').scrollTop=sc;break;}
+    case'prodFilter':prodFilter=el.dataset.v;render();break;
+    case'fToggle':readForm();F[el.dataset.k]=!F[el.dataset.k];if(el.dataset.k==='any'){const sc=$('.sheet-panel').scrollTop;openForm(F._new);$('.sheet-panel').scrollTop=sc;}else{el.classList.toggle('on',F[el.dataset.k]);previewWarn();}break;
+    case'fFreq':readForm();F.freq.type=el.dataset.v;if(F.freq.type==='days'&&!(F.freq.days||[]).length)F.freq.days=[0,2,4];{const sc=$('.sheet-panel').scrollTop;openForm(F._new);$('.sheet-panel').scrollTop=sc;}break;
+    case'fDay':{readForm();const i=+el.dataset.i;const ds=new Set(F.freq.days||[]);ds.has(i)?ds.delete(i):ds.add(i);F.freq.days=[...ds];el.classList.toggle('on',ds.has(i));previewWarn();break;}
+    case'fAct':{readForm();const k=el.dataset.k;const s=new Set(F.actives||[]);s.has(k)?s.delete(k):s.add(k);F.actives=[...s];el.classList.toggle('on',s.has(k));previewWarn();break;}
+    case'fDetect':{readForm();const found=detectActives(F.ingredients);F.actives=[...new Set([...(F.actives||[]),...found])];const sc=$('.sheet-panel').scrollTop;openForm(F._new);$('.sheet-panel').scrollTop=sc;toast(found.length?'Nalezeno: '+found.map(k=>ACTIVES[k].l).join(', '):'Ve složení jsem nic nenašla');break;}
+    case'saveForm':{readForm();if(!F.name){toast('Doplň název produktu');$('#fName').focus();break;}if(!F.am&&!F.pm&&!F.any){toast('Vyber ráno, večer nebo kdykoli');break;}if(F.freq.type==='days'&&!(F.freq.days||[]).length){toast('Vyber aspoň jeden den');break;}if(!F.actives.length&&F.ingredients)F.actives=detectActives(F.ingredients);const p=clone(F);delete p._new;delete p._var;delete p._mode;const isNew=F._new;saveProduct(p);closeSheet();render();toast(isNew?'Přidáno do rutiny':'Uloženo');break;}
+    case'archiveForm':{readForm();const p=clone(F);delete p._new;delete p._var;delete p._mode;p.archived=!p.archived;saveProduct(p);closeSheet();render();toast(p.archived?'Archivováno':'Vráceno do rutiny');break;}
+    case'deleteForm':{if(el.dataset.confirm!=='1'){el.dataset.confirm='1';el.textContent='Opravdu smazat?';break;}removeProduct(F.id);closeSheet();render();toast('Smazáno');break;}
+    case'aiRoutine':runAiRoutine(el);break;
+    case'skinPrev':skinDate=addDays(skinDate,-1);render();break;
+    case'skinNext':if(skinDate<t){skinDate=addDays(skinDate,1);render();}break;
+    case'cond':{const d=getDay(skinDate);d.condition=+el.dataset.v;saveDay(skinDate);render();break;}
+    case'jTag':{const d=getDay(skinDate);const f=el.dataset.f,v=el.dataset.v;const s=new Set(d[f]||[]);s.has(v)?s.delete(v):s.add(v);d[f]=[...s];el.classList.toggle('on',s.has(v));saveDay(skinDate);break;}
+    case'sleep':{const d=getDay(skinDate);d.sleep=Math.max(0,Math.min(14,(d.sleep??7)+(d.sleep==null?0:+el.dataset.v)));saveDay(skinDate);el.parentElement.querySelector('.v').textContent=nf(d.sleep)+' h';break;}
+    case'stress':{const d=getDay(skinDate);const v=+el.dataset.v;d.stress=d.stress===v?null:v;saveDay(skinDate);render();break;}
+    case'delSelfie':{const d=getDay(skinDate);delete d.selfie;saveDay(skinDate,true);render();break;}
+    case'aiSkin':runAiSkin(el);break;
+    case'range':range=+el.dataset.v;render();break;
+    case'photo':{const d=el.dataset.d;const x=S.days[d];openSheet(fmtLong(d),'<div class="selfie"><img alt="" src="'+esc(x.selfie)+'" style="max-height:none"></div><p class="small" style="margin-top:12px">'+esc((x.condition?CONDNAME[x.condition]:'')+((x.concerns||[]).length?' · '+x.concerns.map(c=>CONCERNS[c]).join(', '):''))+'</p>'+(x.ai&&x.ai.souhrn?'<p class="small muted">'+esc(x.ai.souhrn)+'</p>':''));break;}
+    case'openDay':skinDate=el.dataset.d;goto('plet');break;
+    case'pSet':S.profile[el.dataset.f]=el.dataset.v;saveProfile();render();break;
+    case'pConcern':{const s=new Set(S.profile.concerns||[]);const v=el.dataset.v;s.has(v)?s.delete(v):s.add(v);S.profile.concerns=[...s];saveProfile();el.classList.toggle('on',s.has(v));break;}
+    case'export':{try{await navigator.clipboard.writeText(JSON.stringify(S));toast('Záloha zkopírována');}catch(e){toast('Kopírování se nepovedlo');}break;}
+  }
+});
+const pTimers={};
+document.addEventListener('input',ev=>{const el=ev.target;
+  if(el.dataset.input==='prodQuery'){prodQuery=el.value;const pos=el.selectionStart;render();const n=document.querySelector('[data-input=prodQuery]');if(n){n.focus();try{n.setSelectionRange(pos,pos);}catch(e){}}return;}
+  if(F&&el.id==='fIng'){clearTimeout(pTimers.ing);pTimers.ing=setTimeout(()=>{readForm();previewWarn();},500);return;}
+  if(el.dataset.input==='meds'||el.dataset.input==='notes'){const d=getDay(skinDate);d[el.dataset.input]=el.value;saveDay(skinDate);return;}
+  if(el.dataset.word!==undefined){const w=(S.profile.words||[]).slice(0,3);while(w.length<3)w.push('');w[+el.dataset.word]=el.value.trim();S.profile.words=w;clearTimeout(pTimers.w);pTimers.w=setTimeout(saveProfile,700);return;}
+  if(el.dataset.pinput){const f=el.dataset.pinput;S.profile[f]=el.value;clearTimeout(pTimers[f]);pTimers[f]=setTimeout(saveProfile,700);return;}
+});
+document.addEventListener('change',async ev=>{const el=ev.target;
+  if(el.dataset.word!==undefined){saveProfile();render();return;}
+  if(el.dataset.pinput==='allergyText'){saveProfile();render();return;}
+  if(el.dataset.change==='pStartDate'&&el.value){addPeriodStart(el.value);render();toast('Zaznamenáno: '+fmtShort(el.value));return;}
+  if(el.dataset.pchange==='city'){S.profile.city=el.value;saveProfile();uvLive=null;fetchUV();render();return;}
+  if(el.dataset.change==='scanFile'&&el.files[0]){onScan(el.files[0]);el.value='';return;}
+  if(el.dataset.change==='lShot'){const t=$('#lShotT');if(t)t.textContent=el.files.length?('Screenshot přidán'+(el.files.length>1?' ('+el.files.length+')':'')+' ✓'):'Přidat screenshot';return;}
+  if(el.dataset.change==='photoOnly'&&el.files[0]&&F){readForm();const st=$('#formStatus');if(st)st.innerHTML='<span class="spinner"></span> Upravuji fotku…';try{const{img,url}=await loadImg(el.files[0]);let bbox=null;if(sampleFn&&canImages){try{const v=await askJSON('Na obrázku je kosmetický produkt (fotka obalu nebo screenshot e-shopu). Vrať ohraničení samotného produktu jako zlomky šířky a výšky 0–1 a přečti značku a název produktu. Odpověz POUZE JSON: {"bbox":[x0,y0,x1,y1],"brand":"značka nebo prázdný řetězec","name":"název z obalu nebo prázdný řetězec"}',[await toBlob(scaled(img,1200))]);bbox=v.bbox;if(!F.brand&&v.brand){F.brand=String(v.brand);toast('Doplněna značka: '+F.brand);}if(!F.name&&v.name)F.name=String(v.name);}catch(e){}}setVariants(F,img,bbox);URL.revokeObjectURL(url);const sc=$('.sheet-panel').scrollTop;openForm(F._new);$('.sheet-panel').scrollTop=sc;}catch(e){if(st)st.textContent=e.message;}el.value='';return;}
+  if(el.dataset.change==='photoFiles'&&el.files.length){if(document.getElementById('fName'))readForm();onPhotos(el.files);return;}
+  if(el.dataset.change==='selfie'&&el.files[0]){try{const{img,url}=await loadImg(el.files[0]);const c=scaled(img,560);URL.revokeObjectURL(url);const d=getDay(skinDate);d.selfie=c.toDataURL('image/jpeg',.72);saveDay(skinDate,true);render();toast('Selfie uložené');}catch(e){toast(e.message);}return;}
+  if(T&&el.id==='tType'){readTr();const sc=$('.sheet-panel').scrollTop;openTreatment(T,T._new);$('.sheet-panel').scrollTop=sc;return;}
+  if(F&&['fCat'].includes(el.id)){readForm();if(F.category==='spf'){F.am=true;}if(['maska','pristroj','peeling'].includes(F.category)&&!F.any){F.any=true;F.am=false;F.pm=false;if(F.freq.type==='daily')F.freq.type='asneeded';const sc=$('.sheet-panel').scrollTop;openForm(F._new);$('.sheet-panel').scrollTop=sc;return;}previewWarn();}
+});
+init();
+</script>
+</body>
+</html>
