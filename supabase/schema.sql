@@ -87,3 +87,15 @@ begin
 end $$;
 
 revoke execute on function public.ai_use(uuid, date, int) from public, anon, authenticated;
+grant execute on function public.ai_use(uuid, date, int) to service_role;
+
+-- Přístupová práva. Nové projekty Supabase je tabulkám v public automaticky nedávají
+-- (bez nich končí každý dotaz chybou „permission denied for table …“).
+-- Které ŘÁDKY kdo uvidí, dál hlídá RLS výše; anon (nepřihlášený) nedostane nic.
+grant usage on schema public to authenticated, service_role;
+grant select, insert, update, delete
+  on public.profiles, public.products, public.days, public.treatments
+  to authenticated;
+grant select, insert, update, delete
+  on public.profiles, public.products, public.days, public.treatments, public.ai_usage
+  to service_role;
