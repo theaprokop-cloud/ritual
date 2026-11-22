@@ -1,7 +1,7 @@
 // Sdílené pomocné funkce pro serverové API (Vercel Functions).
 // Soubory začínající podtržítkem Vercel nepovažuje za samostatné endpointy.
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_URL = (process.env.SUPABASE_URL || '').replace(/\/+$/, ''); // bez koncového lomítka
 const ANON = process.env.SUPABASE_ANON_KEY;
 const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
