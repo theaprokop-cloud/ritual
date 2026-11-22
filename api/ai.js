@@ -49,11 +49,17 @@ export default async function handler(req, res) {
       headers: {
         'x-api-key': process.env.ANTHROPIC_API_KEY,
         'anthropic-version': '2023-06-01',
+        'anthropic-beta': 'server-side-fallback-2026-07-01',
         'content-type': 'application/json',
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 2000,
+        // Model nejdřív přemýšlí a i to se počítá do max_tokens –
+        // s malým limitem se odpověď (JSON) utne uprostřed.
+        max_tokens: 16000,
+        output_config: { effort: 'low' },
+        // Když bezpečnostní filtr dotaz odmítne, API ho zkusí na záložním modelu.
+        fallbacks: 'default',
         system:
           'Jsi asistentka skincare appky Rituál. Odpovídáš výhradně validním JSON bez dalšího textu. Nejsi lékařka a nestanovuješ diagnózy.',
         messages: [{ role: 'user', content }],
@@ -63,6 +69,14 @@ export default async function handler(req, res) {
     if (!ar.ok) {
       console.error('anthropic error', j);
       return deny(res, 502, 'AI teď neodpověděla, zkus to za chvíli.');
+    }
+    if (j.stop_reason === 'max_tokens') {
+      console.error('anthropic max_tokens', j.usage);
+      return deny(res, 502, 'Odpověď AI byla moc dlouhá a nedošla celá. Zkus to znovu.');
+    }
+    if (j.stop_reason === 'refusal') {
+      console.error('anthropic refusal', j.stop_details);
+      return deny(res, 422, 'AI tenhle dotaz odmítla zpracovat. Zkus jinou fotku nebo text.');
     }
     const text = (j.content || []).filter((c) => c.type === 'text').map((c) => c.text).join('');
     return res.status(200).json({ text });
