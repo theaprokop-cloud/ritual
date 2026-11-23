@@ -604,7 +604,7 @@ function viewToday(){
   {const ex=activeProducts().filter(isExtra).sort((a,b)=>(CATORD[a.category]??99)-(CATORD[b.category]??99));
    if(ex.length){const ws=weekStart(t);const dd=(S.days[t]||{}).extra||{};
     h+='<div class="section"><h3>extra <em>péče</em></h3><div>'+ex.map(p=>{const u=extraUses(p,ws,t);const done=!!dd[p.id];const due=extraDue(p,t);const ago=u.last?diffDays(t,u.last):null;
-      const info=[p.goal?'tento týden '+u.n+'/'+p.goal+'×':(u.n?'tento týden '+u.n+'×':''),ago===null?'zatím nepoužito':ago===0?(past?'použito ten den':'použito dnes'):'naposledy před '+ago+' '+(ago===1?'dnem':'dny'),due?(past?'ten den na řadě':'dnes na řadě'):''].filter(Boolean).join(' · ');
+      const info=[p.goal?'tento týden '+u.n+'/'+p.goal+'×':(u.n?'tento týden '+u.n+'×':''),ago===null?'zatím nepoužito':ago===0?(past?'použito':'použito dnes'):'naposledy před '+ago+' '+(ago===1?'dnem':'dny'),due?(past?'ten den na řadě':'dnes na řadě'):''].filter(Boolean).join(' · ');
       return'<div class="row '+(done?'isdone':'')+'"><button class="chk '+(done?'done':'')+'" data-act="extraDone" data-id="'+p.id+'" aria-label="Použito dnes">'+ICHECK+'</button><div class="grow" data-act="extraDone" data-id="'+p.id+'"><div class="title">'+esc(p.name||'Bez názvu')+'</div><div class="sub">'+esc(info)+'</div></div><button class="link" data-act="openProduct" data-id="'+p.id+'">Detail</button></div>';}).join('')+'</div></div>';}}
   // hair
   if(hairOn()&&hairProducts().length){const hp=hairProducts();const dd=(S.days[t]||{}).hair||{};const wi=washInfo(t);const dayX=S.days[t]||{};
@@ -616,7 +616,7 @@ function viewToday(){
     if(showWash)h+=washP.map((p,i)=>hrow(p,i,[p.brand,CATNAME[p.category]].filter(Boolean).join(' · '))).join('');
     h+=dailyP.map(p=>hrow(p,null,[p.brand,'denně'].filter(Boolean).join(' · '))).join('');
     if(showWash||extraP.length)h+=extraP.map(p=>{const u=extraUsesHair(p,weekStart(t),t);return hrow(p,null,[p.brand,p.goal?'tento týden '+u+'/'+p.goal+'×':'občas'].filter(Boolean).join(' · '));}).join('');
-    h+='<div class="chips" style="margin-top:12px">'+(showWash&&!wi.today?'<button class="chip" data-act="noWash">'+(past?'Ten den jsem nemyla':'Dnes nemyju')+'</button>':'')+(!showWash?'<button class="chip" data-act="washPlan">'+(past?'Ten den jsem myla':'Dnes myju')+'</button>':'')+'</div></div>';}
+    h+='<div class="chips" style="margin-top:12px">'+(showWash&&!wi.today?'<button class="chip" data-act="noWash">'+(past?'Vlasová rutina neproběhla':'Dnes nemyju')+'</button>':'')+(!showWash?'<button class="chip" data-act="washPlan">'+(past?'Vlasová rutina proběhla':'Dnes myju')+'</button>':'')+'</div></div>';}
   }
   // alerts
   const al=[];
