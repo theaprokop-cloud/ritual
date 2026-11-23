@@ -349,7 +349,7 @@ const CLOUDS={clear:['Jasno',1],partly:['Polojasno',.8],cloudy:['Oblačno',.55],
 /* ============ state & storage ============ */
 const S={profile:{},products:{},days:{},treatments:{}};
 let mode='cloud',SB=null,USER=null,sampleFn=true,canImages=true,loadNote='',uvLive=null;
-let routineAiOpen=false,prodView='list',tab='dnes',todaySlot=(new Date().getHours()<14?'am':'pm'),skinDate=todayStr(),range=30,prodFilter='all',prodQuery='';
+let routineAiOpen=false,prodView='list',tab='dnes',routineDate=null,todaySlot=(new Date().getHours()<14?'am':'pm'),skinDate=todayStr(),range=30,prodFilter='all',prodQuery='';
 const chains={};
 function queue(key,fn){chains[key]=(chains[key]||Promise.resolve()).then(async()=>{const r=await fn();if(r&&r.error)throw r.error;}).catch(e=>{console.error(e);toast(navigator.onLine===false?'Jsi offline, změna se neuložila.':'Uložení se nepovedlo, zkus to znovu.');});return chains[key];}
 function saveLocal(){}
@@ -481,6 +481,15 @@ function usedCount(pid,days){let n=0;const t=todayStr();for(let i=0;i<days;i++){
 function suggestAlt(alts,date){const c=whenContext(date);let best=null,bs=0;alts.forEach(p=>{const sc=(p.when||[]).reduce((a,k)=>a+(c[k]||0),0);if(sc>bs){bs=sc;best=p;}});
   if(best)return{p:best,why:(best.when||[]).filter(k=>c[k]).map(k=>WHEN[k]).join(', ')};
   return{p:alts.slice().sort((a,b)=>usedCount(b.id,30)-usedCount(a.id,30))[0],why:''};}
+// Den, pro který se zobrazuje a zapisuje rutina na obrazovce Dnes (zpětné doplnění).
+const rDate=()=>routineDate&&routineDate<todayStr()?routineDate:todayStr();
+function slotDone(date,slot){const it=routineItems(date,slot);if(!it.length)return null;const dd=(S.days[date]||{})[slot]||{};return it.every(z=>z.p?dd[z.p.id]:z.g.alts.some(p=>dd[p.id]));}
+function routineDayStrip(rt){const t=todayStr();let h='<div style="display:flex;gap:6px;margin:0 0 12px;overflow-x:auto">';
+  for(let i=6;i>=0;i--){const d=addDays(t,-i);const a=slotDone(d,'am'),b=slotDone(d,'pm');const full=(a!==null||b!==null)&&a!==false&&b!==false;const part=!full&&(Object.values((S.days[d]||{}).am||{}).some(Boolean)||Object.values((S.days[d]||{}).pm||{}).some(Boolean));
+    h+='<button class="chip '+(d===rt?'on':'')+'" data-act="rDay" data-d="'+d+'" style="flex:1;min-width:42px;padding:8px 0;text-align:center;line-height:1.25"><div class="tiny muted">'+(i===0?'Dnes':WD[wdIdx(d)])+'</div><div>'+parseYmd(d).getDate()+'</div><div class="tiny" style="height:12px">'+(full?'✓':part?'·':'')+'</div></button>';}
+  h+='</div>';
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;margin:-4px 0 12px"><label class="small muted" style="display:flex;align-items:center;gap:8px">Jiný den <input type="date" data-change="routineDate" max="'+t+'" value="'+rt+'" style="width:auto;padding:6px 10px;font-size:14px"></label>'+(rt!==t?'<button class="link" data-act="rDay" data-d="'+t+'">Zpět na dnešek</button>':'')+'</div>';
+  return h;}
 function chosenAlt(g,date,slot){const d=(S.days[date]||{})[slot]||{};return g.alts.find(p=>d[p.id])||null;}
 function pickedAlt(g,date,slot){const d=S.days[date]||{};const pk=((d.pick||{})[slot]||{})[normStep(g.step)];return g.alts.find(p=>p.id===pk)||null;}
 function currentAlt(g,date,slot){return chosenAlt(g,date,slot)||pickedAlt(g,date,slot)||suggestAlt(g.alts,date).p;}
@@ -577,16 +586,18 @@ function viewToday(){
   const uv=uvToday();const rec=spfFor(uv.peak);const pk=Math.round(uv.peak*10)/10;
   h+=scoreCard();
   // routine
+  {const t=rDate();const day=S.days[t]||{am:{},pm:{}};const past=t!==todayStr();
   const slot=todaySlot;const items=routineItems(t,slot);const done=day[slot]||{};const isDone=it=>it.p?!!done[it.p.id]:!!chosenAlt(it.g,t,slot);const nDone=items.filter(isDone).length;
-  h+='<div class="section"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px"><h3 style="margin:0">dnešní <em>rutina</em></h3><span class="small muted">'+(items.length?nDone+' / '+items.length+' hotovo':'')+'</span></div>';
+  h+='<div class="section"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px"><h3 style="margin:0">'+(past?'rutina <em>'+esc(fmtLong(t))+'</em>':'dnešní <em>rutina</em>')+'</h3><span class="small muted">'+(items.length?nDone+' / '+items.length+' hotovo':'')+'</span></div>';
+  h+=routineDayStrip(t);
   h+='<div class="seg" style="margin-bottom:6px"><button class="'+(slot==='am'?'on':'')+'" data-act="slot" data-v="am">Ráno</button><button class="'+(slot==='pm'?'on':'')+'" data-act="slot" data-v="pm">Večer</button></div>';
-  if(!items.length){h+='<div class="empty"><div class="serif">'+(activeProducts().length?'Na dnešní '+(slot==='am'?'ráno':'večer')+' nic':'Zatím žádné produkty')+'</div><div class="small">'+(activeProducts().length?'Podle nastavené frekvence dnes nic nevychází.':'Přidej první produkt: vyfoť obal, nebo vlož odkaz z e-shopu.')+'</div>'+(activeProducts().length?'':'<div style="margin-top:14px"><button class="btn" data-act="addProduct">Přidat produkt</button></div>')+'</div>';}
+  if(!items.length){h+='<div class="empty"><div class="serif">'+(activeProducts().length?(past?'Na tohle ':'Na dnešní ')+(slot==='am'?'ráno':'večer')+' nic':'Zatím žádné produkty')+'</div><div class="small">'+(activeProducts().length?(past?'Podle nastavené frekvence ten den nic nevycházelo.':'Podle nastavené frekvence dnes nic nevychází.'):'Přidej první produkt: vyfoť obal, nebo vlož odkaz z e-shopu.')+'</div>'+(activeProducts().length?'':'<div style="margin-top:14px"><button class="btn" data-act="addProduct">Přidat produkt</button></div>')+'</div>';}
   else{h+='<div>'+items.map((it,i)=>{
     if(it.p){const p=it.p;const d=!!done[p.id];const acts=[...actOf(p)].filter(k=>STRONG.includes(k)||k==='spf');return'<div class="row '+(d?'isdone':'')+'"><span class="num">'+(i+1)+'</span><button class="chk '+(d?'done':'')+'" data-act="toggleDone" data-id="'+p.id+'" aria-label="Hotovo">'+ICHECK+'</button><div class="grow" data-act="toggleDone" data-id="'+p.id+'"><div class="title">'+esc(p.name||'Bez názvu')+'</div><div class="sub">'+esc([p.brand,CATNAME[p.category]].filter(Boolean).join(' · '))+'</div>'+(acts.length?'<div>'+acts.map(k=>'<span class="tag act">'+esc(ACTIVES[k].l)+'</span>').join('')+'</div>':'')+'</div><button class="link" data-act="openProduct" data-id="'+p.id+'">Detail</button></div>';}
     const g=it.g;const ch=chosenAlt(g,t,slot);const cur=currentAlt(g,t,slot);const sug=suggestAlt(g.alts,t);const isSug=!ch&&!pickedAlt(g,t,slot)&&cur.id===sug.p.id&&sug.why;const d=!!ch;const acts=[...actOf(cur)].filter(k=>STRONG.includes(k)||k==='spf');
     return'<div class="row '+(d?'isdone':'')+'"><span class="num">'+(i+1)+'</span><button class="chk '+(d?'done':'')+'" data-act="altDone" data-id="'+cur.id+'" aria-label="Hotovo">'+ICHECK+'</button><div class="grow" data-act="altDone" data-id="'+cur.id+'"><div class="title">'+esc(cur.name||'Bez názvu')+'</div><div class="sub">'+esc(g.step+' · '+(isSug?'doporučeno: '+sug.why.toLowerCase():'střídáš '+g.alts.length+' produkty'))+'</div>'+(acts.length?'<div>'+acts.map(k=>'<span class="tag act">'+esc(ACTIVES[k].l)+'</span>').join('')+'</div>':'')+'</div><button class="link" data-act="altOpen" data-step="'+esc(g.step)+'">Změnit</button></div>';}).join('')+'</div>';
     if(nDone<items.length)h+='<button class="btn ghost sm" style="margin-top:12px" data-act="allDone">Označit vše jako hotové</button>';}
-  h+='</div>';
+  h+='</div>';}
 
   // extra care
   {const ex=activeProducts().filter(isExtra).sort((a,b)=>(CATORD[a.category]??99)-(CATORD[b.category]??99));
@@ -1113,20 +1124,21 @@ document.addEventListener('click',async ev=>{
     case'goto':closeSheet();goto(el.dataset.tab);break;
     case'closeSheet':closeSheet();if(OB)document.body.style.overflow='hidden';break;
     case'slot':todaySlot=el.dataset.v;render();break;
+    case'rDay':routineDate=el.dataset.d<t?el.dataset.d:null;render();break;
     case'cloud':{const d=getDay(t);d.cloud=el.dataset.v;saveDay(t,true);render();break;}
     case'snow':{const d=getDay(t);d.snow=!d.snow;saveDay(t,true);render();break;}
-    case'toggleDone':{const d=getDay(t);const id=el.dataset.id;d[todaySlot][id]=!d[todaySlot][id];if(!d[todaySlot][id])delete d[todaySlot][id];saveDay(t);render();break;}
+    case'toggleDone':{const t=rDate();const d=getDay(t);const id=el.dataset.id;d[todaySlot][id]=!d[todaySlot][id];if(!d[todaySlot][id])delete d[todaySlot][id];saveDay(t);render();break;}
     case'extraDone':{const d=getDay(t);d.extra=d.extra||{};const id=el.dataset.id;if(d.extra[id])delete d.extra[id];else{d.extra[id]=true;const p=S.products[id];const iss=p?todayIssues(t).filter(x=>x.pids.includes(id)&&x.lvl!=='info'):[];if(iss.length)toast('Pozor: '+iss[0].title.toLowerCase());}saveDay(t,true);render();break;}
-    case'pickAlt':{const d=getDay(t);const id=el.dataset.id;const p=S.products[id];if(!p)break;const k=stepKey(p,todaySlot);const was=!!d[todaySlot][id];activeProducts().filter(x=>x[todaySlot]&&stepKey(x,todaySlot)===k).forEach(x=>delete d[todaySlot][x.id]);if(!was)d[todaySlot][id]=true;saveDay(t);render();if(!was){const iss=todayIssues(t).filter(x=>x.pids.includes(id)&&x.lvl!=='info');if(iss.length)toast('Pozor: '+iss[0].title.toLowerCase());}break;}
-    case'altDone':{const d=getDay(t);const id=el.dataset.id;const p=S.products[id];if(!p)break;const k=stepKey(p,todaySlot);const was=!!d[todaySlot][id];activeProducts().filter(x=>x[todaySlot]&&stepKey(x,todaySlot)===k).forEach(x=>delete d[todaySlot][x.id]);if(!was)d[todaySlot][id]=true;saveDay(t);render();if(!was){const iss=todayIssues(t).filter(x=>x.pids.includes(id)&&x.lvl!=='info');if(iss.length)toast('Pozor: '+iss[0].title.toLowerCase());}break;}
-    case'altOpen':{const it=routineItems(t,todaySlot).find(x=>x.g&&normStep(x.g.step)===normStep(el.dataset.step));if(!it)break;const g=it.g;const cur=currentAlt(g,t,todaySlot);const sug=suggestAlt(g.alts,t);
+    case'pickAlt':{const t=rDate();const d=getDay(t);const id=el.dataset.id;const p=S.products[id];if(!p)break;const k=stepKey(p,todaySlot);const was=!!d[todaySlot][id];activeProducts().filter(x=>x[todaySlot]&&stepKey(x,todaySlot)===k).forEach(x=>delete d[todaySlot][x.id]);if(!was)d[todaySlot][id]=true;saveDay(t);render();if(!was){const iss=todayIssues(t).filter(x=>x.pids.includes(id)&&x.lvl!=='info');if(iss.length)toast('Pozor: '+iss[0].title.toLowerCase());}break;}
+    case'altDone':{const t=rDate();const d=getDay(t);const id=el.dataset.id;const p=S.products[id];if(!p)break;const k=stepKey(p,todaySlot);const was=!!d[todaySlot][id];activeProducts().filter(x=>x[todaySlot]&&stepKey(x,todaySlot)===k).forEach(x=>delete d[todaySlot][x.id]);if(!was)d[todaySlot][id]=true;saveDay(t);render();if(!was){const iss=todayIssues(t).filter(x=>x.pids.includes(id)&&x.lvl!=='info');if(iss.length)toast('Pozor: '+iss[0].title.toLowerCase());}break;}
+    case'altOpen':{const t=rDate();const it=routineItems(t,todaySlot).find(x=>x.g&&normStep(x.g.step)===normStep(el.dataset.step));if(!it)break;const g=it.g;const cur=currentAlt(g,t,todaySlot);const sug=suggestAlt(g.alts,t);
       openSheet(g.step,'<p class="small muted">Co dnes použiješ?</p><div>'+g.alts.map(p=>{const u=usedCount(p.id,60);let last=null;for(let i=0;i<60;i++){const x=S.days[addDays(t,-i)];if(x&&(x[todaySlot]||{})[p.id]){last=i;break;}}const tags=(p.when||[]).map(k=>WHEN[k]).join(', ');
         return'<div class="row" data-act="altPick" data-id="'+p.id+'" style="cursor:pointer">'+thumbHtml(p)+'<div class="grow"><div class="title">'+esc(p.name)+'</div>'+(p.id===sug.p.id&&sug.why?'<div class="sub" style="color:var(--accent)">✦ doporučeno: '+esc(sug.why.toLowerCase())+'</div>':'')+'<div class="sub">'+esc([p.brand,tags].filter(Boolean).join(' · '))+'</div><div class="sub">'+(last===null?'zatím nepoužito':last===0?'použito dnes':'naposledy před '+last+' '+(last===1?'dnem':'dny'))+'</div></div><div class="chk '+(p.id===cur.id?'done':'')+'" style="pointer-events:none">'+ICHECK+'</div></div>';}).join('')+'</div>');break;}
-    case'altPick':{const d=getDay(t);const p=S.products[el.dataset.id];if(!p)break;const k=stepKey(p,todaySlot);d.pick=d.pick||{};d.pick[todaySlot]=d.pick[todaySlot]||{};d.pick[todaySlot][k]=p.id;const g=activeProducts().filter(x=>x[todaySlot]&&stepKey(x,todaySlot)===k);if(g.some(x=>d[todaySlot][x.id])){g.forEach(x=>delete d[todaySlot][x.id]);d[todaySlot][p.id]=true;}saveDay(t,true);closeSheet();render();break;}
+    case'altPick':{const t=rDate();const d=getDay(t);const p=S.products[el.dataset.id];if(!p)break;const k=stepKey(p,todaySlot);d.pick=d.pick||{};d.pick[todaySlot]=d.pick[todaySlot]||{};d.pick[todaySlot][k]=p.id;const g=activeProducts().filter(x=>x[todaySlot]&&stepKey(x,todaySlot)===k);if(g.some(x=>d[todaySlot][x.id])){g.forEach(x=>delete d[todaySlot][x.id]);d[todaySlot][p.id]=true;}saveDay(t,true);closeSheet();render();break;}
     case'hairDone':{const d=getDay(t);d.hair=d.hair||{};const id=el.dataset.id;if(d.hair[id])delete d.hair[id];else d.hair[id]=true;saveDay(t);render();break;}
     case'noWash':{const d=getDay(t);d.noWash=true;d.washPlan=false;saveDay(t,true);render();break;}
     case'washPlan':{const d=getDay(t);d.washPlan=true;d.noWash=false;saveDay(t,true);render();break;}
-    case'allDone':{const d=getDay(t);routineItems(t,todaySlot).forEach(it=>{if(it.p)d[todaySlot][it.p.id]=true;else if(!chosenAlt(it.g,t,todaySlot))d[todaySlot][currentAlt(it.g,t,todaySlot).id]=true;});saveDay(t,true);render();toast('Rutina hotová ✓');break;}
+    case'allDone':{const t=rDate();const d=getDay(t);routineItems(t,todaySlot).forEach(it=>{if(it.p)d[todaySlot][it.p.id]=true;else if(!chosenAlt(it.g,t,todaySlot))d[todaySlot][currentAlt(it.g,t,todaySlot).id]=true;});saveDay(t,true);render();toast('Rutina hotová ✓');break;}
     case'addProduct':newArea=(tab==='produkty'&&prodTab==='hair')?'hair':'skin';if(tab==='produkty'&&prodTab==='tr'){openTreatment({id:uid(),type:'osetreni',date:todayStr(),pause:2},true);}else addProductStart();break;
     case'linkProduct':openSheet('Produkt z e-shopu','<label class="lbl" style="margin-top:0">Odkaz</label><input type="text" inputmode="url" id="lUrl" placeholder="https://www.notino.cz/…"><label class="lbl">Screenshot stránky (doporučeno)</label><label class="choice" style="margin:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 18h4"/></svg><div><div class="t" id="lShotT">Přidat screenshot</div><div class="d">Claude z něj přečte značku a název a vezme z něj i fotku produktu</div></div><input type="file" accept="image/*" multiple id="lShot" data-change="lShot"></label><label class="lbl">Text ze stránky (volitelně)</label><textarea id="lText" placeholder="Zkopíruj název, popis a hlavně složení / Ingredients. Čím víc, tím přesnější výsledek." style="min-height:130px"></textarea><p class="tiny muted" style="margin-top:8px">Appka zkusí stránku načíst. Některé e-shopy načtení blokují, pak pomůže screenshot nebo vložený text. Fotku přidáš v dalším kroku, stačí i screenshot z e-shopu.</p><button class="btn dark block" style="margin-top:14px" data-act="linkParse">Načíst produkt</button><div id="addStatus" class="small" style="margin-top:10px"></div>');break;
     case'linkParse':{const url=($('#lUrl').value||'').trim(),txt=($('#lText').value||'').trim();const shots=Array.from(($('#lShot')||{}).files||[]).slice(0,3);if(!url&&!txt&&!shots.length){toast('Vlož odkaz, screenshot nebo text');break;}el.disabled=true;el.innerHTML='<span class="spinner"></span> Claude čte…';
@@ -1249,6 +1261,7 @@ document.addEventListener('input',ev=>{const el=ev.target;
 document.addEventListener('change',async ev=>{const el=ev.target;
   if(el.dataset.word!==undefined){saveProfile();render();return;}
   if(el.dataset.pinput==='allergyText'){saveProfile();render();return;}
+  if(el.dataset.change==='routineDate'){routineDate=el.value&&el.value<todayStr()?el.value:null;render();return;}
   if(el.dataset.change==='pStartDate'&&el.value){addPeriodStart(el.value);render();toast('Zaznamenáno: '+fmtShort(el.value));return;}
   if(el.dataset.pchange==='city'){S.profile.city=el.value;saveProfile();uvLive=null;fetchUV();render();return;}
   if(el.dataset.change==='scanFile'&&el.files[0]){onScan(el.files[0]);el.value='';return;}
