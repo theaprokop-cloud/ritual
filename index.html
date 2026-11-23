@@ -575,6 +575,7 @@ function viewToday(){
   let h='';
   if(loadNote)h+='<div class="banner">'+esc(loadNote)+'</div>';
   const uv=uvToday();const rec=spfFor(uv.peak);const pk=Math.round(uv.peak*10)/10;
+  h+=scoreCard();
   // routine
   const slot=todaySlot;const items=routineItems(t,slot);const done=day[slot]||{};const isDone=it=>it.p?!!done[it.p.id]:!!chosenAlt(it.g,t,slot);const nDone=items.filter(isDone).length;
   h+='<div class="section"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px"><h3 style="margin:0">dnešní <em>rutina</em></h3><span class="small muted">'+(items.length?nDone+' / '+items.length+' hotovo':'')+'</span></div>';
@@ -627,12 +628,11 @@ function viewToday(){
 
 
   // check-in
-  h+='<div class="section"><h3>pleť <em>dnes</em></h3>';
-  if(!day.condition){h+='<div class="card"><p class="hero">jak se dnes má <em>tvoje pleť?</em></p><p class="small muted">Rychlý check-in na 10 vteřin: stav pleti, co řešíš a spánek. Selfie a detaily podle chuti. Pak ti Claude navrhne, jak upravit rutinu.</p><button class="btn" data-act="goto" data-tab="plet">začít check-in</button></div>';}
-  else{h+='<div class="card"><p class="hero">'+esc(CONDNAME[day.condition])+'</p><p class="small muted">'+esc((day.concerns||[]).map(c=>CONCERNS[c]).filter(Boolean).join(', ')||'Bez potíží')+'</p>'+(day.ai&&day.ai.souhrn?'<p class="small">'+esc(day.ai.souhrn)+'</p>':'')+'<button class="link" data-act="goto" data-tab="plet">Otevřít deník</button></div>';}
+  const rc=recsFor(t);
+  if(cycleOn()||rc.length)h+='<div class="section"><h3>pleť <em>dnes</em></h3>';
   const ci=cycleInfo(t);
   if(cycleOn()){const ask=ci&&!ci.lost&&ci.day>=ci.L-2&&S.profile.notYet!==t;
-    h+='<div class="card" style="margin-top:12px"><div class="kicker">Cyklus'+(ci&&!ci.lost?' · '+ci.day+'. den':'')+'</div>';
+    h+='<div class="card"><div class="kicker">Cyklus'+(ci&&!ci.lost?' · '+ci.day+'. den':'')+'</div>';
     if(!ci||ci.lost)h+='<p class="small" style="margin-top:6px">'+(ci&&ci.lost?'Odhad cyklu už nesedí. Kdy začala poslední menstruace?':'Kdy začala poslední menstruace? Podle toho ti ukážu, jak fáze cyklu ovlivňuje pleť.')+'</p>';
     else{h+='<p class="hero" style="font-size:24px;margin-top:6px">'+esc(PHASES[ci.phase].l)+(ci.late?' <em class="small" style="font-size:16px">· zpoždění '+ci.late+' '+(ci.late===1?'den':ci.late<5?'dny':'dní')+'</em>':'')+'</p><p class="small">'+esc(PHASES[ci.phase].t)+'</p>';
       if(!ci.late)h+='<p class="tiny muted">Další menstruace asi za '+ci.next+' '+(ci.next===1?'den':ci.next<5?'dny':'dní')+(ci.learned?' (podle tvých posledních cyklů)':'')+'.</p>';}
@@ -640,8 +640,8 @@ function viewToday(){
     else h+='<div style="display:flex;gap:18px;margin-top:4px"><button class="link" data-act="pStart" data-v="'+t+'">Začala dnes</button><button class="link" data-act="pOther">Začala jindy</button></div>';
     if(pOtherOpen)h+='<div style="display:flex;gap:8px;margin-top:12px"><input type="date" id="pOtherDate" max="'+t+'" value="'+addDays(t,-2)+'" style="flex:1"><button class="btn sm dark" data-act="pOtherSave">Uložit</button></div>';
     h+='</div>';}
-  const rc=recsFor(t);if(rc.length)h+='<div class="card" style="padding:4px 16px">'+rc.map(r=>alertHtml('info',esc(r))).join('')+'</div>';
-  h+='</div>';
+  if(rc.length)h+='<div class="card" style="padding:4px 16px">'+rc.map(r=>alertHtml('info',esc(r))).join('')+'</div>';
+  if(cycleOn()||rc.length)h+='</div>';
   return h;
 }
 function recsFor(date){
@@ -814,7 +814,8 @@ function openForm(isNew){
   {const allSteps=(()=>{const m={};Object.values(S.products).filter(x=>x.id!==p.id).forEach(x=>['am','pm'].forEach(sl=>{const k=stepKey(x,sl);if(k&&!m[k])m[k]=stepName(x,sl);}));return m;})();
    const stepField=sl=>{const lab=sl==='am'?'ráno':'večer';const cur=stepName(p,sl);const sugg=Object.entries(allSteps).filter(([k])=>k!==normStep(cur)).map(([k,v])=>v);
      let x='<label class="lbl">Krok v rutině '+lab+' (volitelné)</label><input type="text" id="fStep'+(sl==='am'?'Am':'Pm')+'" list="stepList" placeholder="např. '+(sl==='am'?'Denní krém':'Noční krém')+'" value="'+esc(cur)+'">'+(sugg.length?'<div class="chips" style="margin-top:8px">'+sugg.map(v=>'<button class="chip" data-act="fStepPick" data-slot="'+sl+'" data-v="'+esc(v)+'" style="padding:6px 12px;font-size:13px">'+esc(v)+'</button>').join('')+'</div>':'');
-     if(cur){const mem=Object.values(S.products).filter(y=>!y.archived&&y.id!==p.id&&y[sl]&&stepKey(y,sl)===normStep(cur));x+='<div class="card" style="margin-top:10px;padding:12px 14px"><p class="small" style="margin:0 0 4px"><b>'+(sl==='am'?'Ráno':'Večer')+' se střídá s:</b></p>'+(mem.length?mem.map(y=>'<p class="small" style="margin:2px 0">'+esc(y.name)+'</p>').join(''):'<p class="small muted" style="margin:0">Zatím s ničím. Stejný krok nastav i u produktů, se kterými ho '+lab+' střídáš.</p>')+'</div>';}
+     if(cur){const mem=Object.values(S.products).filter(y=>!y.archived&&y.id!==p.id&&y[sl]&&stepKey(y,sl)===normStep(cur));const cand=activeProducts().filter(y=>y.id!==p.id&&y[sl]&&stepKey(y,sl)!==normStep(cur)&&(y.category===p.category||['serum','krem','olej','treatment','ocni'].includes(y.category)&&['serum','krem','olej','treatment','ocni'].includes(p.category))).sort((a2,b2)=>(a2.category===p.category?0:1)-(b2.category===p.category?0:1));
+       x+='<div class="card" style="margin-top:10px;padding:12px 14px"><p class="small" style="margin:0 0 4px"><b>'+(sl==='am'?'Ráno':'Večer')+' se střídá s:</b></p>'+(mem.length?mem.map(y=>'<p class="small" style="margin:2px 0;display:flex;justify-content:space-between;gap:10px"><span>'+esc(y.name)+'</span><button class="link" data-act="stepRemove" data-id="'+y.id+'" data-slot="'+sl+'">odebrat</button></p>').join(''):'<p class="small muted" style="margin:0">Zatím s ničím.</p>')+(cand.length?'<p class="tiny muted" style="margin:10px 0 6px">Přidat do kroku '+esc(cur)+':</p><div class="chips">'+cand.map(y=>'<button class="chip" data-act="stepAdd" data-id="'+y.id+'" data-slot="'+sl+'" style="padding:6px 12px;font-size:13px">+ '+esc(y.name)+'</button>').join('')+'</div>':'')+'</div>';}
      return x;};
    if(p.am||p.pm){h+='<datalist id="stepList">'+Object.values(allSteps).map(v=>'<option value="'+esc(v)+'">').join('')+'</datalist>';if(p.am)h+=stepField('am');if(p.pm)h+=stepField('pm');h+='<p class="tiny muted" style="margin-top:6px">Produkty se stejným krokem se střídají. Na Dnes z nich vybereš jeden. Ráno a večer můžou být v různých krocích.</p>';}
    if(hasStep(p))h+='<label class="lbl">Kdy ho volím</label><div class="chips">'+Object.entries(WHEN).map(([k,l])=>'<button class="chip '+((p.when||[]).includes(k)?'on':'')+'" data-act="fWhen" data-k="'+k+'">'+l+'</button>').join('')+'</div>';}
@@ -926,12 +927,72 @@ async function runReport(btn){btn.disabled=true;btn.innerHTML='<span class="spin
   try{const v=await askJSON(reportPromptBase()+'\n\nVytvoř měsíční skin report. Odpověz POUZE validním JSON:\n{"souhrn":"2–3 věty o tom, jak se pleť vyvíjí a čím to je","svedci":["max 3 konkrétní zjištění z dat: produkt nebo návyk + jak moc pomáhá"],"reaguje":["max 3 zjištění, na co pleť špatně reaguje, s doporučením"],"latky":[{"nazev":"účinná látka","proc":"proč pro ni, 1 věta","jak":"jak a kdy ji zařadit, 1 věta"}],"produkty":[{"nazev":"přesný název produktu","znacka":"značka","kategorie":"Sérum/Krém/…","latka":"hlavní látka","proc":"proč pro ni a kdy používat, 1–2 věty"}],"vyradit":["max 2 věci, co by šlo vyřadit nebo zjednodušit"]}\nMax 2 látky a přesně 3 produkty dostupné v Evropě.');
     S.profile.skinReport={at:todayStr(),n:reportCount(),data:v};saveProfile();render();openSheet('tvůj skin report',renderReport(S.profile.skinReport));}
   catch(e){toast(e.message||'Report se nepovedl.');btn.disabled=false;btn.textContent='Vytvořit report';}}
+function pulseData(dates,logged){const t=todayStr();const n=dates.length;const prev=[];for(let i=n;i<2*n;i++)prev.push(addDays(t,-i));const pl=prev.map(d=>S.days[d]).filter(x=>x&&x.condition);
+  const avg=a=>a.length?a.reduce((s,x)=>s+x.condition,0)/a.length:null;const a=avg(logged),b=avg(pl);const delta=(a!=null&&b!=null&&pl.length>=3)?a-b:null;
+  let head,sub='';if(delta!=null&&delta>=0.3)head='Pleť se <em>zlepšuje</em>.';else if(delta!=null&&delta<=-0.3)head='Pleť potřebuje <em>víc péče</em>.';else if(a>=4)head='Pleť je v <em>dobré kondici</em>.';else if(a>=3)head='Pleť je <em>stabilní</em>.';else head='Náročnější <em>období</em>.';
+  const cc=x=>(x.concerns||[]);const top=Object.entries(logged.reduce((m,x)=>{cc(x).forEach(c=>m[c]=(m[c]||0)+1);return m;},{})).sort((p,q)=>q[1]-p[1])[0];
+  if(top&&pl.length>=3){const r1=top[1]/logged.length,r0=pl.filter(x=>cc(x).includes(top[0])).length/pl.length;if(r1<r0-0.1)sub=CONCERNS[top[0]]+' se objevuje méně často než v předchozím období.';else if(r1>r0+0.1)sub=CONCERNS[top[0]]+' se objevuje častěji než v předchozím období.';}
+  if(!sub){const fi=factorInsights(logged).filter(f=>f.diff>0)[0];if(fi)sub=fi.text;}
+  if(!sub)sub=delta!=null?(delta>=0?'Průměrný stav je o '+nf(Math.abs(delta))+' bodu lepší než v předchozích '+n+' dnech.':'Průměrný stav je o '+nf(Math.abs(delta))+' bodu horší než v předchozích '+n+' dnech.'):'Pro srovnání s předchozím obdobím potřebuju víc zápisů.';
+  const badges=[];
+  let streak=0;for(let i=0;i<400;i++){const d=S.days[addDays(t,-i)];const any=d&&(Object.values(d.am||{}).some(Boolean)||Object.values(d.pm||{}).some(Boolean)||d.condition);if(any)streak++;else if(i>0)break;}
+  if(streak>=3)badges.push(streak+' dní v řadě');
+  const watch=new Set([...(S.profile.concerns||[]),'zarudnuti','akne']);let free=0;for(let i=0;i<90;i++){const x=S.days[addDays(t,-i)];if(!x||!x.condition){if(i===0)continue;break;}if(cc(x).some(c=>watch.has(c)))break;free++;}
+  if(free>=3)badges.push(free+' dní bez potíží');
+  const wavg=off=>{const a2=[];for(let i=off;i<off+7;i++){const x=S.days[addDays(t,-i)];if(x&&x.condition)a2.push(x.condition);}return a2.length>=4?a2.reduce((p,q)=>p+q,0)/a2.length:null;};
+  const cur=wavg(0);if(cur!=null){let best=true,cmp=0;for(let o=7;o<=84;o+=7){const w=wavg(o);if(w!=null){cmp++;if(w>=cur)best=false;}}if(best&&cmp>=2)badges.push('Nejlepší týden za 3 měsíce');}
+  let sched=0,done=0;dates.forEach(d=>{['am','pm'].forEach(sl=>{const it=routineItems(d,sl);const dd=(S.days[d]||{})[sl]||{};sched+=it.length;done+=it.filter(x=>x.p?dd[x.p.id]:x.g.alts.some(p=>dd[p.id])).length;});});
+  if(sched&&done/sched>=0.8)badges.push('Rutina '+Math.round(done/sched*100)+' %');
+  const ci=cycleInfo(t);if(ci&&ci.phase)badges.push(PHASES[ci.phase].l);
+  return{a,delta,head,sub,badges};}
+function pulseCard(dates,logged){if(!logged.length)return'';const p=pulseData(dates,logged);const pl=S.profile.pulse;const showAi=pl&&pl.at===todayStr()&&pl.range===range;
+  return'<div class="section"><div style="background:var(--paper);padding:26px 22px;text-align:center"><div class="kicker" style="text-transform:uppercase;letter-spacing:.14em;font-size:11px;color:var(--muted)">posledních '+range+' dní</div>'+
+    '<div style="font-family:var(--serif);font-size:72px;line-height:1;margin:14px 0 2px">'+nf(Math.round(p.a*10)/10)+'<span style="font-size:24px;color:var(--muted)"> / 5</span></div><div class="small muted">průměrný stav pleti'+(p.delta!=null?' · <span style="color:'+(p.delta>=0?'var(--good)':'var(--bad)')+'">'+(p.delta>=0?'↑ ':'↓ ')+nf(Math.abs(Math.round(p.delta*10)/10))+'</span>':'')+'</div>'+
+    '<h2 style="font-size:34px;margin:22px 0 10px">'+p.head+'</h2><p class="small" style="color:var(--ink2);max-width:320px;margin:0 auto">'+esc(p.sub)+'</p>'+
+    (p.badges.length?'<div class="chips" style="justify-content:center;margin-top:18px">'+p.badges.map(b=>'<span class="chip" style="background:#fff">✦ '+esc(b)+'</span>').join('')+'</div>':'')+
+    (showAi?'<div style="text-align:left;background:#fff;padding:16px 18px;margin-top:20px"><div class="small" style="font-weight:600;margin-bottom:6px">Claude</div><p style="font-family:var(--serif);font-size:19px;line-height:1.35;margin:0">'+esc(pl.text)+'</p></div>':'<button class="btn dark" style="margin-top:20px" data-act="pulseMore">Řekni víc</button>')+
+    '</div></div>';}
+function skinScore(date){const d=S.days[date]||{};const prevD=S.days[addDays(date,-1)]||{};let prov=false;const F=[];let sc=0;
+  // stav pleti 30
+  let cond=d.condition;if(!cond){prov=true;const a=[1,2,3].map(i=>S.days[addDays(date,-i)]).filter(x=>x&&x.condition).map(x=>x.condition);cond=a.length?a.reduce((p,q)=>p+q,0)/a.length:3;}
+  sc+=(cond-1)/4*30;F.push(['Stav pleti',d.condition?CONDNAME[d.condition]:'—']);
+  // potíže 15
+  const cs=d.condition?(d.concerns||[]):(prevD.concerns||[]);sc+=Math.max(0,15-5*cs.length);F.push(['Potíže',cs.length?cs.slice(0,2).map(c=>CONCERNS[c].split(' /')[0]).join(', '):'Žádné']);
+  // spánek 10
+  const sl=d.sleep!=null?d.sleep:null;sc+=sl==null?6:sl>=7.5?10:sl>=7?8:sl>=6?5:2;F.push(['Spánek',sl==null?'—':sl>=7?'Dobrý':sl>=6?'Kratší':'Krátký']);
+  // stres 10
+  const st=d.stress||null;sc+=st?[0,10,8,6,3,1][st]:6;F.push(['Stres',st?['','Žádný','Nízký','Střední','Vysoký','Extrémní'][st]:'—']);
+  // rutina 15 (poslední 3 dny)
+  let sch=0,dn=0;for(let i=0;i<3;i++){const x=addDays(date,-i);['am','pm'].forEach(sl2=>{const it=routineItems(x,sl2);const dd=(S.days[x]||{})[sl2]||{};if(i===0&&sl2==='pm'&&new Date().getHours()<18&&x===todayStr())return;if(i===0&&sl2==='am'&&!it.some(z=>z.p?dd[z.p.id]:z.g.alts.some(p=>dd[p.id]))&&x===todayStr())return;sch+=it.length;dn+=it.filter(z=>z.p?dd[z.p.id]:z.g.alts.some(p=>dd[p.id])).length;});}
+  const ad=sch?dn/sch:0.6;sc+=ad*15;F.push(['Rutina',sch?(ad>=0.8?'Pravidelná':ad>=0.5?'Občas vynechaná':'Vynechaná'):'—']);
+  // ochrana 5
+  const spf=activeProducts().some(p=>p.am&&actOf(p).has('spf'));const ac=aftercare(date);let prot=spf?5:1;if(ac.length){const strong=['am','pm'].flatMap(x=>effectiveFor(date,x)).some(p=>[...actOf(p)].some(k=>STRONG.includes(k)));if(strong)prot=Math.max(0,prot-3);}sc+=prot;
+  // prostředí a strava 10
+  const env=[...(d.env||[]),...(prevD.env||[])],food=[...(d.food||[]),...(prevD.food||[])];let pe=10;if(food.includes('alkohol'))pe-=3;if(env.includes('topeni'))pe-=2;if(env.includes('mraz'))pe-=1;if(env.includes('slunce')&&!spf)pe-=2;if(food.includes('cukr')||food.includes('sacharidy'))pe-=1;if(food.includes('voda'))pe+=1;pe=Math.max(0,Math.min(10,pe));sc+=pe;
+  F.push(['Prostředí',pe>=9?'Příznivé':env.includes('topeni')?'Suchý vzduch':food.includes('alkohol')?'Alkohol':'Zátěž']);
+  // cyklus 5
+  const ci=cycleInfo(date);if(ci&&ci.phase){sc+=(ci.phase==='pozdni'||ci.phase==='menstruace')?2:5;F.push(['Cyklus',PHASES[ci.phase].l.replace(' fáze','')]);}else{sc+=4;F.push(['Ochrana',spf?(ac.length?'Po zákroku':'SPF v rutině'):'Chybí SPF']);}
+  sc=Math.round(Math.max(0,Math.min(100,sc)));
+  const lab=sc>=80?['Výborné','pleť je v top formě']:sc>=65?['Dobré','pleť je v pohodě']:sc>=50?['Průměrné','dopřej jí šetrnou péči']:['Nízké','dnes zpomal a zklidňuj'];
+  return{score:sc,label:lab[0],sub:lab[1],factors:F,prov};}
+function scoreRing(v){const r=46,c=2*Math.PI*r,arc=c*0.75,fill=arc*v/100;return'<svg width="120" height="120" viewBox="0 0 120 120"><g transform="rotate(135 60 60)"><circle cx="60" cy="60" r="'+r+'" fill="none" stroke="#E3E1DB" stroke-width="8" stroke-linecap="round" stroke-dasharray="'+arc+' '+c+'"/><circle cx="60" cy="60" r="'+r+'" fill="none" stroke="'+(v>=65?'var(--ink)':v>=50?'var(--warn)':'var(--bad)')+'" stroke-width="8" stroke-linecap="round" stroke-dasharray="'+fill+' '+c+'"/></g><text x="60" y="70" text-anchor="middle" font-family="EB Garamond,Georgia,serif" font-size="38" fill="#111">'+v+'</text></svg>';}
+function scoreCard(){const t=todayStr();const k=skinScore(t);const dates=[];for(let i=6;i>=0;i--)dates.push(addDays(t,-i));const logged=dates.map(d=>S.days[d]).filter(x=>x&&x.condition);let wk='';if(logged.length>=2){const sv=range;range=7;const p=pulseData(dates,logged);range=sv;wk='Týden: '+nf(Math.round(p.a*10)/10)+' / 5'+(p.delta!=null?' '+(p.delta>=0?'↑':'↓')+' '+nf(Math.abs(Math.round(p.delta*10)/10)):'')+(p.badges[0]?' · ✦ '+p.badges[0]:'');}
+  return'<div class="section"><div style="background:var(--paper);padding:18px 18px 16px"><div style="display:flex;justify-content:space-between;align-items:center"><div class="small" style="font-weight:600">Skin Score</div>'+(k.prov?'<button class="link" data-act="pulseLog">doplnit check-in</button>':'')+'</div>'+
+  '<div style="display:flex;align-items:center;gap:14px;margin-top:6px">'+scoreRing(k.score)+'<div><div style="font-family:var(--serif);font-size:32px;line-height:1">'+k.label+'</div><div class="small muted" style="margin-top:4px">'+esc(k.sub)+(k.prov?' · předběžné':'')+'</div></div></div>'+
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin-top:10px">'+k.factors.map(([l,v])=>'<div><div style="font-size:16px">'+esc(v)+'</div><div class="tiny muted">'+esc(l)+'</div></div>').join('')+'</div>'+
+  (wk?'<div data-act="pulseGo" style="border-top:1px solid var(--line);margin-top:14px;padding-top:12px;display:flex;justify-content:space-between;align-items:center;cursor:pointer"><span class="small">'+esc(wk)+'</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#857F78" stroke-width="1.6"><path d="M9 6l6 6-6 6"/></svg></div>':'')+'</div></div>';}
+function pulseMini(){const t=todayStr();const dates=[];for(let i=6;i>=0;i--)dates.push(addDays(t,-i));const logged=dates.map(d=>S.days[d]).filter(x=>x&&x.condition);
+  if(logged.length<2){const left=2-logged.length;const todayDone=!!(S.days[t]&&S.days[t].condition);return'<div class="section"><div data-act="pulseLog" style="background:var(--paper);padding:16px 18px;display:flex;gap:16px;align-items:center;cursor:pointer"><div style="text-align:center;flex:none;min-width:70px"><div style="font-family:var(--serif);font-size:40px;line-height:1;color:#C9C5BE">–</div><div class="tiny muted" style="margin-top:2px">7 dní</div></div><div style="flex:1;min-width:0"><div style="font-family:var(--serif);font-size:21px;line-height:1.15">tvůj <em>týden</em></div><div class="small muted" style="margin-top:4px">'+(todayDone?'Zítra zapiš pleť v deníku znovu a ukážu ti, jak se ti daří.':'Zapiš v deníku, jak se má pleť. Ještě '+left+' '+(left===1?'zápis':'zápisy')+' a ukážu ti souhrn týdne.')+'</div></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#857F78" stroke-width="1.6" style="flex:none"><path d="M9 6l6 6-6 6"/></svg></div></div>';}
+  const sv=range;range=7;const p=pulseData(dates,logged);range=sv;
+  return'<div class="section"><div data-act="pulseGo" style="background:var(--paper);padding:16px 18px;display:flex;gap:16px;align-items:center;cursor:pointer"><div style="text-align:center;flex:none;min-width:70px"><div style="font-family:var(--serif);font-size:40px;line-height:1">'+nf(Math.round(p.a*10)/10)+'</div><div class="tiny muted" style="margin-top:2px">'+(p.delta!=null?'<span style="color:'+(p.delta>=0?'var(--good)':'var(--bad)')+'">'+(p.delta>=0?'↑ ':'↓ ')+nf(Math.abs(Math.round(p.delta*10)/10))+'</span> · ':'')+'7 dní</div></div><div style="flex:1;min-width:0"><div style="font-family:var(--serif);font-size:21px;line-height:1.15">'+p.head+'</div><div class="small muted" style="margin-top:4px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">'+esc(p.sub)+'</div>'+(p.badges.length?'<div class="tiny" style="margin-top:6px;color:var(--ink2)">✦ '+esc(p.badges.slice(0,2).join(' · '))+'</div>':'')+'</div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#857F78" stroke-width="1.6" style="flex:none"><path d="M9 6l6 6-6 6"/></svg></div></div>';}
 function viewInsights(){
   const t=todayStr();const dates=[];for(let i=range-1;i>=0;i--)dates.push(addDays(t,-i));
   const logged=dates.map(d=>S.days[d]).filter(x=>x&&x.condition);
   let h='<div class="section"><div class="seg">'+[7,30,90].map(r=>'<button class="'+(range===r?'on':'')+'" data-act="range" data-v="'+r+'">'+r+' dní</button>').join('')+'</div></div>';
+  // pulse summary
+  h+=pulseCard(dates,logged);
   // adherence
-  let sched=0,done=0;dates.forEach(d=>{if(d>t)return;['am','pm'].forEach(s=>{const l=scheduledFor(d,s);const dd=(S.days[d]||{})[s]||{};sched+=l.length;done+=l.filter(p=>dd[p.id]).length;});});
+  let sched=0,done=0;dates.forEach(d=>{if(d>t)return;['am','pm'].forEach(sl=>{const it=routineItems(d,sl);const dd=(S.days[d]||{})[sl]||{};sched+=it.length;done+=it.filter(x=>x.p?dd[x.p.id]:x.g.alts.some(p=>dd[p.id])).length;});});
   let streak=0;for(let i=0;i<400;i++){const d=S.days[addDays(t,-i)];const any=d&&(Object.values(d.am||{}).some(Boolean)||Object.values(d.pm||{}).some(Boolean)||d.condition);if(any)streak++;else if(i>0)break;}
   h+='<div class="section"><div class="stats"><div><div class="n">'+(sched?Math.round(done/sched*100)+' %':'—')+'</div><div class="l">rutiny splněno</div></div><div><div class="n">'+streak+'</div><div class="l">dní v řadě</div></div><div><div class="n">'+logged.length+'</div><div class="l">záznamů v deníku</div></div></div></div>';
   {const n=reportCount();const r=S.profile.skinReport;
@@ -1120,6 +1181,11 @@ document.addEventListener('click',async ev=>{
     case'washMark':{const d=getDay(skinDate);if(dayWashed(skinDate)){d.washMark=false;const h2=d.hair||{};Object.keys(h2).forEach(id=>{const p=S.products[id];if(p&&(p.hw||'wash')==='wash')delete h2[id];});}else d.washMark=true;saveDay(skinDate,true);render();break;}
     case'hairToggle':S.profile.hairOn=!S.profile.hairOn;saveProfile();render();break;
     case'pMulti':{const f=el.dataset.f,v=el.dataset.v;const s2=new Set(S.profile[f]||[]);s2.has(v)?s2.delete(v):s2.add(v);S.profile[f]=[...s2];saveProfile();el.classList.toggle('on',s2.has(v));break;}
+    case'pulseLog':skinDate=todayStr();goto('plet');break;
+    case'pulseGo':range=7;goto('prehled');break;
+    case'pulseMore':{el.disabled=true;el.innerHTML='<span class="spinner"></span> Claude přemýšlí…';try{const t=todayStr();const dates=[];for(let i=range-1;i>=0;i--)dates.push(addDays(t,-i));const logged=dates.map(d=>S.days[d]).filter(x=>x&&x.condition);const pd=pulseData(dates,logged);
+      const v=await askJSON(reportPromptBase()+'\n\nOBDOBÍ: posledních '+range+' dní. Průměrný stav '+nf(pd.a)+'/5'+(pd.delta!=null?', změna oproti předchozímu období '+nf(pd.delta):'')+'. Odznaky: '+(pd.badges.join(', ')||'—')+'.\nNapiš krátký povzbudivý, ale věcný komentář jako fitness appka (Strava/Oura): 2–3 věty, konkrétně co se daří a jednu věc, na kterou se zaměřit. Odpověz POUZE JSON: {"text":"…"}');
+      S.profile.pulse={at:t,range,text:String(v.text||'')};saveProfile();render();}catch(e){toast(e.message||'Nepovedlo se');el.disabled=false;el.textContent='Řekni víc';}break;}
     case'reportRun':runReport(el);break;
     case'reportOpen':if(S.profile.skinReport)openSheet('tvůj skin report',renderReport(S.profile.skinReport));break;
     case'reportMore':{const r=S.profile.skinReport;if(!r)break;el.disabled=true;el.innerHTML='<span class="spinner"></span> Hledám jiné…';try{const prev=((r.data||{}).produkty||[]).map(p=>p.znacka+' '+p.nazev).join('; ');const v=await askJSON(reportPromptBase()+'\n\nNavrhni 3 JINÉ produkty než tyto: '+prev+'. Odpověz POUZE JSON: {"produkty":[{"nazev":"","znacka":"","kategorie":"","latka":"","proc":""}]}');if(v&&Array.isArray(v.produkty)&&v.produkty.length){r.data.produkty=v.produkty;saveProfile();openSheet('tvůj skin report',renderReport(r));}}catch(e){toast(e.message||'Nepovedlo se');el.disabled=false;el.textContent='Jiné návrhy';}break;}
@@ -1138,6 +1204,9 @@ document.addEventListener('click',async ev=>{
     case'pAllerg':{const s2=new Set(S.profile.allergies||[]);const v=el.dataset.v;s2.has(v)?s2.delete(v):s2.add(v);S.profile.allergies=[...s2];saveProfile();render();break;}
     case'fAllAct':{readForm();showAllAct=!showAllAct;const sc=$('.sheet-panel').scrollTop;openForm(F._new);$('.sheet-panel').scrollTop=sc;break;}
     case'fStepPick':{readForm();if(el.dataset.slot==='pm')F.stepPm=el.dataset.v;else F.stepAm=el.dataset.v;const sc=$('.sheet-panel').scrollTop;openForm(F._new);$('.sheet-panel').scrollTop=sc;break;}
+    case'stepAdd':case'stepRemove':{readForm();const y=S.products[el.dataset.id];const sl=el.dataset.slot;if(!y||!F)break;const cur=sl==='am'?F.stepAm:F.stepPm;if(!cur)break;const k=sl==='am'?'stepAm':'stepPm';y[k]=a==='stepAdd'?cur:'';saveProduct(y);
+      if(!F._new&&S.products[F.id]){const me=S.products[F.id];if(me[k]!==cur){me[k]=cur;saveProduct(me);}}
+      const sc=$('.sheet-panel').scrollTop;openForm(F._new);$('.sheet-panel').scrollTop=sc;toast(a==='stepAdd'?'Přidáno do kroku '+cur:'Odebráno z kroku');break;}
     case'fWhen':{readForm();const s2=new Set(F.when||[]);const k=el.dataset.k;s2.has(k)?s2.delete(k):s2.add(k);F.when=[...s2];el.classList.toggle('on',s2.has(k));break;}
     case'fHw':{readForm();F.hw=el.dataset.v;const sc=$('.sheet-panel').scrollTop;openForm(F._new);$('.sheet-panel').scrollTop=sc;break;}
     case'fArea':{readForm();const v=el.dataset.v;if((v==='hair')!==isHair(F)){F.area=v;if(v==='hair'){F.category='sampon';F.hw='wash';F.am=false;F.pm=false;F.any=false;}else{F.category='serum';F.pm=true;}}const sc=$('.sheet-panel').scrollTop;openForm(F._new);$('.sheet-panel').scrollTop=sc;break;}
