@@ -570,7 +570,7 @@ function render(){
   v.innerHTML=(loadNote&&tab!=='profil'?'':'')+views[tab]();
   if(tab==='plet')mountSkin();
 }
-function greeting(){const hr=new Date().getHours();const g=hr<11?'Dobré ráno':hr<18?'Dobrý den':'Dobrý večer';const n=S.profile.name;return esc(g)+(n?', <em>'+esc(n)+'</em>.':'.');}
+function greeting(){const n=S.profile.name;return 'Ahoj'+(n?', <em>'+esc(n)+'</em>':'');}
 function goto(t){tab=t;try{history.replaceState(null,'','#'+t);}catch(e){location.hash=t;}render();window.scrollTo(0,0);}
 
 function thumbHtml(p){const src=p.photo||p.thumb;return'<div class="thumb" style="background:#fff;border:1px solid var(--line)">'+(src?'<img alt="" style="object-fit:contain" src="'+esc(src)+'">':esc((p.brand||p.name||'?').trim().charAt(0).toUpperCase()))+'</div>';}
