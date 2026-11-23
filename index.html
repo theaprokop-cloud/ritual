@@ -968,16 +968,16 @@ function firstRoutineDate(){let f=null;for(const [k,x] of Object.entries(S.days)
 function skinScore(date){const d=S.days[date]||{};const prevD=S.days[addDays(date,-1)]||{};let prov=false;const F=[];let sc=0;
   // stav pleti 30
   let cond=d.condition;if(!cond){prov=true;const a=[1,2,3].map(i=>S.days[addDays(date,-i)]).filter(x=>x&&x.condition).map(x=>x.condition);cond=a.length?a.reduce((p,q)=>p+q,0)/a.length:3;}
-  sc+=(cond-1)/4*30;F.push(['Stav pleti',d.condition?CONDNAME[d.condition]:'—']);
+  sc+=(cond-1)/4*30;F.push(['Stav pleti',d.condition?CONDNAME[d.condition]:'Nevyplněno']);
   // potíže 15
   const cs=d.condition?(d.concerns||[]):(prevD.concerns||[]);sc+=Math.max(0,15-5*cs.length);F.push(['Potíže',cs.length?cs.slice(0,2).map(c=>CONCERNS[c].split(' /')[0]).join(', '):'Žádné']);
   // spánek 10
-  const sl=d.sleep!=null?d.sleep:null;sc+=sl==null?6:sl>=7.5?10:sl>=7?8:sl>=6?5:2;F.push(['Spánek',sl==null?'—':sl>=7?'Dobrý':sl>=6?'Kratší':'Krátký']);
+  const sl=d.sleep!=null?d.sleep:null;sc+=sl==null?6:sl>=7.5?10:sl>=7?8:sl>=6?5:2;F.push(['Spánek',sl==null?'Nevyplněno':sl>=7?'Dobrý':sl>=6?'Kratší':'Krátký']);
   // stres 10
-  const st=d.stress||null;sc+=st?[0,10,8,6,3,1][st]:6;F.push(['Stres',st?['','Žádný','Nízký','Střední','Vysoký','Extrémní'][st]:'—']);
+  const st=d.stress||null;sc+=st?[0,10,8,6,3,1][st]:6;F.push(['Stres',st?['','Žádný','Nízký','Střední','Vysoký','Extrémní'][st]:'Nevyplněno']);
   // rutina 15 (poslední 3 dny)
-  let sch=0,dn=0;const fr=firstRoutineDate();for(let i=0;i<3;i++){const x=addDays(date,-i);if(!fr||x<fr)continue;['am','pm'].forEach(sl2=>{const it=routineItems(x,sl2);const dd=(S.days[x]||{})[sl2]||{};if(i===0&&sl2==='pm'&&new Date().getHours()<18&&x===todayStr())return;if(i===0&&sl2==='am'&&!it.some(z=>z.p?dd[z.p.id]:z.g.alts.some(p=>dd[p.id]))&&x===todayStr())return;sch+=it.length;dn+=it.filter(z=>z.p?dd[z.p.id]:z.g.alts.some(p=>dd[p.id])).length;});}
-  const ad=sch?dn/sch:0.6;sc+=ad*15;F.push(['Rutina',sch?(ad>=0.8?'Pravidelná':ad>=0.5?'Občas vynechaná':'Vynechaná'):'—']);
+  let sch=0,dn=0;const fr=firstRoutineDate();const miss=[];for(let i=0;i<3;i++){const x=addDays(date,-i);if(!fr||x<fr)continue;const xd=S.days[x]||{};const any=Object.values(xd.am||{}).some(Boolean)||Object.values(xd.pm||{}).some(Boolean);if(!any){if(x<todayStr())miss.push(x);continue;}['am','pm'].forEach(sl2=>{const it=routineItems(x,sl2);const dd=(S.days[x]||{})[sl2]||{};if(i===0&&sl2==='pm'&&new Date().getHours()<18&&x===todayStr())return;if(i===0&&sl2==='am'&&!it.some(z=>z.p?dd[z.p.id]:z.g.alts.some(p=>dd[p.id]))&&x===todayStr())return;sch+=it.length;dn+=it.filter(z=>z.p?dd[z.p.id]:z.g.alts.some(p=>dd[p.id])).length;});}
+  const ad=sch?dn/sch:0.6;sc+=ad*15;F.push(['Rutina',miss.length?'Nedoplněno':sch?(ad>=0.8?'Pravidelná':ad>=0.5?'Občas vynechaná':'Vynechaná'):'Nevyplněno']);
   // ochrana 5
   const spf=activeProducts().some(p=>p.am&&actOf(p).has('spf'));const ac=aftercare(date);let prot=spf?5:1;if(ac.length){const strong=['am','pm'].flatMap(x=>effectiveFor(date,x)).some(p=>[...actOf(p)].some(k=>STRONG.includes(k)));if(strong)prot=Math.max(0,prot-3);}sc+=prot;
   // prostředí a strava 10
@@ -987,10 +987,10 @@ function skinScore(date){const d=S.days[date]||{};const prevD=S.days[addDays(dat
   const ci=cycleInfo(date);if(ci&&ci.phase){sc+=(ci.phase==='pozdni'||ci.phase==='menstruace')?2:5;F.push(['Cyklus',PHASES[ci.phase].l.replace(' fáze','')]);}else{sc+=4;F.push(['Ochrana',spf?(ac.length?'Po zákroku':'SPF v rutině'):'Chybí SPF']);}
   sc=Math.round(Math.max(0,Math.min(100,sc)));
   const lab=sc>=80?['Výborné','pleť je v top formě']:sc>=65?['Dobré','pleť je v pohodě']:sc>=50?['Průměrné','dopřej jí šetrnou péči']:['Nízké','dnes zpomal a zklidňuj'];
-  return{score:sc,label:lab[0],sub:lab[1],factors:F,prov};}
+  return{score:sc,label:lab[0],sub:lab[1],factors:F,prov,miss};}
 function scoreRing(v){const r=46,c=2*Math.PI*r,arc=c*0.75,fill=arc*v/100;return'<svg width="120" height="120" viewBox="0 0 120 120"><g transform="rotate(135 60 60)"><circle cx="60" cy="60" r="'+r+'" fill="none" stroke="#E3E1DB" stroke-width="8" stroke-linecap="round" stroke-dasharray="'+arc+' '+c+'"/><circle cx="60" cy="60" r="'+r+'" fill="none" stroke="'+(v>=65?'var(--ink)':v>=50?'var(--warn)':'var(--bad)')+'" stroke-width="8" stroke-linecap="round" stroke-dasharray="'+fill+' '+c+'"/></g><text x="60" y="70" text-anchor="middle" font-family="EB Garamond,Georgia,serif" font-size="38" fill="#111">'+v+'</text></svg>';}
-function scoreCard(){const t=todayStr();const k=skinScore(t);const dates=[];for(let i=6;i>=0;i--)dates.push(addDays(t,-i));const logged=dates.map(d=>S.days[d]).filter(x=>x&&x.condition);let wk='';if(logged.length>=2){const sv=range;range=7;const p=pulseData(dates,logged);range=sv;wk='Týden: '+nf(Math.round(p.a*10)/10)+' / 5'+(p.delta!=null?' '+(p.delta>=0?'↑':'↓')+' '+nf(Math.abs(Math.round(p.delta*10)/10)):'')+(p.badges[0]?' · ✦ '+p.badges[0]:'');}
-  return'<div class="section"><div style="background:var(--paper);padding:18px 18px 16px"><div style="display:flex;justify-content:space-between;align-items:center"><div class="small" style="font-weight:600">Skin Score</div>'+(k.prov?'<button class="link" data-act="pulseLog">doplnit check-in</button>':'')+'</div>'+
+function scoreCard(){const t=rDate();const past=t!==todayStr();const k=skinScore(t);const dates=[];for(let i=6;i>=0;i--)dates.push(addDays(t,-i));const logged=dates.map(d=>S.days[d]).filter(x=>x&&x.condition);let wk='';if(logged.length>=2){const sv=range;range=7;const p=pulseData(dates,logged);range=sv;wk='Týden: '+nf(Math.round(p.a*10)/10)+' / 5'+(p.delta!=null?' '+(p.delta>=0?'↑':'↓')+' '+nf(Math.abs(Math.round(p.delta*10)/10)):'')+(p.badges[0]?' · ✦ '+p.badges[0]:'');}
+  return'<div class="section"><div style="background:var(--paper);padding:18px 18px 16px"><div style="display:flex;justify-content:space-between;align-items:center"><div class="small" style="font-weight:600">Skin Score'+(past?' · '+esc(fmtShort(t)):'')+'</div><div style="display:flex;gap:14px">'+(k.miss.length?'<button class="link" data-act="rDay" data-d="'+k.miss[0]+'">doplnit rutinu</button>':'')+(k.prov?'<button class="link" data-act="pulseLog" data-d="'+t+'">doplnit check-in</button>':'')+'</div></div>'+
   '<div style="display:flex;align-items:center;gap:14px;margin-top:6px">'+scoreRing(k.score)+'<div><div style="font-family:var(--serif);font-size:32px;line-height:1">'+k.label+'</div><div class="small muted" style="margin-top:4px">'+esc(k.sub)+(k.prov?' · předběžné':'')+'</div></div></div>'+
   '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin-top:10px">'+k.factors.map(([l,v])=>'<div><div style="font-size:16px">'+esc(v)+'</div><div class="tiny muted">'+esc(l)+'</div></div>').join('')+'</div>'+
   (wk?'<div data-act="pulseGo" style="border-top:1px solid var(--line);margin-top:14px;padding-top:12px;display:flex;justify-content:space-between;align-items:center;cursor:pointer"><span class="small">'+esc(wk)+'</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#857F78" stroke-width="1.6"><path d="M9 6l6 6-6 6"/></svg></div>':'')+'</div></div>';}
@@ -1195,7 +1195,7 @@ document.addEventListener('click',async ev=>{
     case'washMark':{const d=getDay(skinDate);if(dayWashed(skinDate)){d.washMark=false;const h2=d.hair||{};Object.keys(h2).forEach(id=>{const p=S.products[id];if(p&&(p.hw||'wash')==='wash')delete h2[id];});}else d.washMark=true;saveDay(skinDate,true);render();break;}
     case'hairToggle':S.profile.hairOn=!S.profile.hairOn;saveProfile();render();break;
     case'pMulti':{const f=el.dataset.f,v=el.dataset.v;const s2=new Set(S.profile[f]||[]);s2.has(v)?s2.delete(v):s2.add(v);S.profile[f]=[...s2];saveProfile();el.classList.toggle('on',s2.has(v));break;}
-    case'pulseLog':skinDate=todayStr();goto('plet');break;
+    case'pulseLog':skinDate=el.dataset.d&&el.dataset.d<=t?el.dataset.d:t;goto('plet');break;
     case'pulseGo':range=7;goto('prehled');break;
     case'pulseMore':{el.disabled=true;el.innerHTML='<span class="spinner"></span> Claude přemýšlí…';try{const t=todayStr();const dates=[];for(let i=range-1;i>=0;i--)dates.push(addDays(t,-i));const logged=dates.map(d=>S.days[d]).filter(x=>x&&x.condition);const pd=pulseData(dates,logged);
       const v=await askJSON(reportPromptBase()+'\n\nOBDOBÍ: posledních '+range+' dní. Průměrný stav '+nf(pd.a)+'/5'+(pd.delta!=null?', změna oproti předchozímu období '+nf(pd.delta):'')+'. Odznaky: '+(pd.badges.join(', ')||'—')+'.\nNapiš krátký povzbudivý, ale věcný komentář jako fitness appka (Strava/Oura): 2–3 věty, konkrétně co se daří a jednu věc, na kterou se zaměřit. Odpověz POUZE JSON: {"text":"…"}');
