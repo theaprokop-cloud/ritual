@@ -584,7 +584,6 @@ function viewToday(){
   let h='';
   if(loadNote)h+='<div class="banner">'+esc(loadNote)+'</div>';
   const uv=uvToday();const rec=spfFor(uv.peak);const pk=Math.round(uv.peak*10)/10;
-  h+=guideCard();
   h+=scoreCard();
   // routine
   {const t=rDate();const day=S.days[t]||{am:{},pm:{}};const past=t!==todayStr();
@@ -994,27 +993,6 @@ function skinScore(date){const d=S.days[date]||{};const prevD=S.days[addDays(dat
 function scoreRing(v){const r=46,c=2*Math.PI*r,arc=c*0.75,fill=arc*v/100;return'<svg width="120" height="120" viewBox="0 0 120 120"><g transform="rotate(135 60 60)"><circle cx="60" cy="60" r="'+r+'" fill="none" stroke="#E3E1DB" stroke-width="8" stroke-linecap="round" stroke-dasharray="'+arc+' '+c+'"/><circle cx="60" cy="60" r="'+r+'" fill="none" stroke="'+(v>=65?'var(--ink)':v>=50?'var(--warn)':'var(--bad)')+'" stroke-width="8" stroke-linecap="round" stroke-dasharray="'+fill+' '+c+'"/></g><text x="60" y="70" text-anchor="middle" font-family="EB Garamond,Georgia,serif" font-size="38" fill="#111">'+v+'</text></svg>';}
 // Má den vlastní záznam? (rutina, check-in, spánek, stres, potíže…)
 function dayHasData(date){const d=S.days[date];if(!d)return false;const on=o=>Object.values(o||{}).some(Boolean);return !!(d.condition||d.sleep!=null||d.stress||(d.concerns||[]).length||on(d.am)||on(d.pm)||on(d.extra)||on(d.hair)||d.selfie||d.washMark);}
-/* ---------- průvodce „První kroky“ ---------- */
-const isStandalone=()=>{try{return !!(navigator.standalone||matchMedia('(display-mode: standalone)').matches);}catch(e){return false;}};
-const guideSt=()=>S.profile.guide||{};
-function guideSet(k,v){S.profile.guide={...guideSt(),[k]:v};saveProfile();}
-const anyDay=f=>Object.values(S.days).some(d=>d&&f(d));
-const GUIDE=[
-  {k:'prod',t:'Přidej produkty, které používáš',d:'Vyfoť obal nebo vlož odkaz z e-shopu. Pro začátek stačí tři.',done:()=>activeProducts().filter(p=>!isHair(p)).length>=3,act:'data-act="goto" data-tab="produkty"'},
-  {k:'slots',t:'Nastav ranní a večerní rutinu',d:'U produktu zvol Ráno nebo Večer a jak často ho používáš.',done:()=>{const a=activeProducts().filter(p=>!isHair(p));return a.some(p=>p.am)&&a.some(p=>p.pm);},act:'data-act="goto" data-tab="produkty"'},
-  {k:'tick',t:'Odškrtni první rutinu',d:'Ťukni níž na kroužek u produktu. Zapomenutý den doplníš v pásu dní nad rutinou.',done:()=>!!firstRoutineDate(),act:''},
-  {k:'checkin',t:'Zapiš, jak se má pleť',d:'Krátký check-in v Deníku: stav pleti, potíže a spánek. Z něj se počítá Skin Score.',done:()=>anyDay(d=>d.condition),act:'data-act="pulseLog"'},
-  {k:'selfie',t:'Vyfoť první selfie',d:'Denní světlo, bez make-upu, pokaždé stejné místo. Uvidíš vývoj a Claude může pleť zhodnotit.',done:()=>anyDay(d=>d.selfie),act:'data-act="pulseLog"'},
-  {k:'profil',t:'Projdi Profil',d:'Alergie, cyklus a péče o vlasy. Podle nich appka hlídá složení a upravuje doporučení.',done:()=>!!guideSt().profil,act:'data-act="goto" data-tab="profil"'},
-  {k:'home',t:'Přidej si Rituál na plochu',d:'Otevře se jako aplikace, bez lišty prohlížeče.',done:()=>!!guideSt().home||isStandalone(),act:'data-act="guideHome"'}];
-function guideCard(){const g=guideSt();if(g.hidden||g.done)return'';
-  if(isStandalone()&&!g.home)guideSet('home',true);
-  const st=GUIDE.map(x=>({...x,ok:!!x.done()}));const n=st.filter(x=>x.ok).length;
-  if(n===st.length){guideSet('done',true);return'';}const next=st.find(x=>!x.ok);
-  return'<div class="section"><div style="background:var(--paper);padding:18px 18px 6px"><div style="display:flex;justify-content:space-between;align-items:baseline"><h3 style="margin:0">první <em>kroky</em></h3><div style="display:flex;gap:14px;align-items:baseline"><span class="small muted">'+n+' / '+st.length+'</span><button class="link" data-act="guideHide">Skrýt</button></div></div>'+
-    '<div style="height:3px;background:var(--line);margin:12px 0 2px"><div style="height:3px;background:var(--ink);width:'+Math.round(n/st.length*100)+'%"></div></div>'+
-    st.map(x=>'<div class="row'+(x.ok?' isdone':'')+'" '+(x.ok?'':x.act)+' style="'+(x.ok||!x.act?'cursor:default;':'')+'border-bottom:'+(x===st[st.length-1]?'0':'1px solid var(--line)')+'"><span class="chk'+(x.ok?' done':'')+'">'+(x.ok?ICHECK:'')+'</span><div class="grow"><div class="title">'+esc(x.t)+'</div>'+(x===next?'<div class="sub" style="white-space:normal;overflow:visible">'+esc(x.d)+'</div>':'')+'</div>'+(!x.ok&&x.act?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#857F78" stroke-width="1.6"><path d="M9 6l6 6-6 6"/></svg>':'')+'</div>').join('')+
-    '</div></div>';}
 function scoreCard(){const t=rDate();const past=t!==todayStr();
   if(past&&!dayHasData(t))return'<div class="section"><div style="background:var(--paper);padding:18px 18px 16px"><div style="display:flex;justify-content:space-between;align-items:center"><div class="small" style="font-weight:600">Skin Score · '+esc(fmtShort(t))+'</div><button class="link" data-act="pulseLog" data-d="'+t+'">doplnit check-in</button></div><div style="font-family:var(--serif);font-size:26px;line-height:1.2;margin-top:14px">Pro tenhle den <em>nemáš data</em></div><p class="small muted" style="margin:6px 0 0">Odškrtni níž rutinu nebo doplň check-in a skóre se dopočítá.</p></div></div>';
   const k=skinScore(t);const dates=[];for(let i=6;i>=0;i--)dates.push(addDays(t,-i));const logged=dates.map(d=>S.days[d]).filter(x=>x&&x.condition);let wk='';if(logged.length>=2){const sv=range;range=7;const p=pulseData(dates,logged);range=sv;wk='Týden: '+nf(Math.round(p.a*10)/10)+' / 5'+(p.delta!=null?' '+(p.delta>=0?'↑':'↓')+' '+nf(Math.abs(Math.round(p.delta*10)/10)):'')+(p.badges[0]?' · ✦ '+p.badges[0]:'');}
@@ -1095,9 +1073,7 @@ function factorInsights(logged){
 /* ============ PROFILE ============ */
 function viewProfile(){
   const p=S.profile;let h='';
-  if(!guideSt().profil)guideSet('profil',true);
   if(loadNote)h+='<div class="banner">'+esc(loadNote)+'</div>';
-  if(guideSt().hidden&&!guideSt().done)h+='<div class="section"><button class="link" data-act="guideShow">Zobrazit průvodce „První kroky“</button></div>';
   h+='<div class="section"><h3>o <em>tobě</em></h3><label class="lbl" style="margin-top:0">Jméno</label><input type="text" value="'+esc(p.name||'')+'" data-pinput="name" placeholder="Jak ti mám říkat?"></div>';
   {const w=(p.words||[]).slice(0,3);while(w.length<3)w.push('');const full=w.every(Boolean);const edit=wordsEdit||!w.some(Boolean);
    h+='<div class="section"><h3>tvoje <em>3 beauty slova</em></h3>';
@@ -1154,10 +1130,6 @@ document.addEventListener('click',async ev=>{
     case'goto':closeSheet();goto(el.dataset.tab);break;
     case'closeSheet':closeSheet();if(OB)document.body.style.overflow='hidden';break;
     case'slot':todaySlot=el.dataset.v;render();break;
-    case'guideHide':guideSet('hidden',true);render();toast('Průvodce najdeš zase v Profilu');break;
-    case'guideShow':guideSet('hidden',false);goto('dnes');break;
-    case'guideHome':openSheet('Přidat na plochu','<p class="small"><b>iPhone (Safari):</b> dole ťukni na <b>Sdílet</b> (čtvereček se šipkou nahoru), sjeď níž a zvol <b>Přidat na plochu</b> → <b>Přidat</b>.</p><p class="small"><b>Android (Chrome):</b> vpravo nahoře <b>⋮</b> → <b>Přidat na plochu</b> nebo <b>Instalovat aplikaci</b>.</p><p class="small muted">Pak Rituál otevírej z ikony na ploše. Přihlásíš se jednou a zůstaneš přihlášená.</p><button class="btn dark block" style="margin-top:14px" data-act="guideHomeDone">Hotovo, mám ho na ploše</button>');break;
-    case'guideHomeDone':guideSet('home',true);closeSheet();render();break;
     case'rDay':routineDate=el.dataset.d<t?el.dataset.d:null;render();break;
     case'cloud':{const d=getDay(t);d.cloud=el.dataset.v;saveDay(t,true);render();break;}
     case'snow':{const d=getDay(t);d.snow=!d.snow;saveDay(t,true);render();break;}
