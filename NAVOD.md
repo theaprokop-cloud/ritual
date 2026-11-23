@@ -75,7 +75,7 @@ Bez tohohle by odkazy v e-mailech (pozvánka, nové heslo) vedly jinam.
 2. Klikni na odkaz v e-mailu, nastav si heslo a projdi úvodní nastavení.
 3. **Přenes svá data ze staré verze:** ve staré appce v Claudovi otevři Profil a dej **Zkopírovat zálohu**. V nové appce pak Profil → **Nahrát zálohu** → vložit → Nahrát.
 4. Na iPhonu otevři adresu v Safari → **Sdílet → Přidat na plochu**.
-5. Vyzkoušej: sken EAN, odkaz z e-shopu, ranní diagnostiku a odhlášení s novým přihlášením.
+5. Vyzkoušej: přidání produktu fotkou i odkazem z e-shopu, ranní diagnostiku, skin report, zapomenuté heslo a odhlášení s novým přihlášením.
 
 ## 8. Než pozveš beta testerky
 
@@ -103,7 +103,7 @@ index.html            appka (vše v jednom souboru)
 config.js             veřejná konfigurace Supabase
 soukromi.html         návrh zásad ochrany osobních údajů
 api/ai.js             AI přes Claude API + denní limit
-api/ean.js            dohledání produktu podle čárového kódu
+api/ean.js            dohledání podle čárového kódu (v appce zatím nevyužité)
 api/page.js           načtení stránky z e-shopu
 api/account.js        smazání účtu a všech dat
 api/_lib.js           sdílené funkce
@@ -114,8 +114,8 @@ CLAUDE.md             kontext pro Claude Code
 
 ### Co se oproti verzi v Claudovi změnilo
 
-- Vlastní přihlášení e-mailem a heslem, účty na pozvánku, odhlášení a smazání účtu.
-- **Sken EAN** dohledá produkt v databázi Open Beauty Facts, často i se složením a fotkou.
+- Vlastní přihlášení e-mailem a heslem, účty na pozvánku, zapomenuté heslo, změna hesla, odhlášení a smazání účtu.
+- Obsahuje všechno z verze v Claudovi: střídané kroky rutiny, extra péči, procedury, cyklus, alergie, skin report s wishlistem a péči o vlasy.
 - **Odkaz z e-shopu** appka zkusí načíst sama. Když to e-shop zablokuje, pomůže screenshot.
 - **UV index** je živý z předpovědi (Open-Meteo). Odhad se použije, jen když předpověď nejde načíst.
 - AI má denní limit na uživatelku a platí se z tvého API klíče.

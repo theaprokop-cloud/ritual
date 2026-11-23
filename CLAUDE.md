@@ -20,9 +20,9 @@ Osobní skincare deník (uzavřená beta, vlastní projekt Thei). UI je **česky
 
 ## Datový model
 Každá tabulka ukládá dokument v `data jsonb`, struktura odpovídá objektům v JS:
-- profil: `name, gender, skinType, sens, concerns[], words[], goals, allergies[], allergyText, city, cycleOn, periodStarts[], cycleLen, periodLen, consentAt, onboarded, routineAi`
-- produkt: `id, name, brand, category, ean, url, ingredients, ingSource, actives[], am, pm, any, freq{type:daily|days|interval|asneeded, days[], every, start}, goal, opened, pao, expiry, weeks, low, archived, photo, notes`
-- den: `date, am{pid:true}, pm{}, extra{}, condition 1–5, concerns[], sleep, stress, food[], activity[], env[], meds, notes, selfie(dataURL), ai{}, dismissed[]`
+- profil: `name, gender, skinType, sens, concerns[], words[], goals, allergies[], allergyText, city, cycleOn, periodStarts[], cycleLen, periodLen, consentAt, onboarded, routineAi, skinReport{at,n,data}, wishlist[], hairOn, hairType, scalp, hairFlags[], washFreq, hairAvoid[]`
+- produkt: `id, area(skin|hair), name, brand, category, ean, url, ingredients, ingSource, actives[], am, pm, any, stepAm, stepPm, when[], freq{type:daily|days|interval|asneeded, days[], every, start}, goal, hw(wash|extra|daily – jen vlasy), opened, pao, expiry, weeks, low, archived, photo, notes`
+- den: `date, am{pid:true}, pm{}, extra{}, pick{am:{krok:pid}}, hair{pid:true}, washMark, noWash, washPlan, hairState[], condition 1–5, concerns[], sleep, stress, food[], activity[], env[], meds, notes, selfie(dataURL), ai{}, dismissed[]`
 - procedura: `id, type, custom, date, time, place, price, pause, reaction, notes, repeat`
 
 ## Pravidla
@@ -34,7 +34,17 @@ Každá tabulka ukládá dokument v `data jsonb`, struktura odpovídá objektům
 - Testuj vždy i v **Safari na iPhonu** (skryté `<input type=date>` a `fetch(data:)` tam nefungují).
 - Zdravotní údaje (selfie, cyklus, alergie, léky) = zvláštní kategorie GDPR.
 
+## Klíčové funkce (kde hledat)
+- Střídané kroky rutiny: `routineItems`, `suggestAlt`, `currentAlt`, akce `altDone`/`altOpen`/`altPick`.
+- Kontroly: `analyzeSlot` (konflikty látek), `allergyHits`, `hairAvoidHits`, `inciItems`/`inciHas`.
+- Cyklus: `periodStarts`, `cycleLength`, `cycleInfo`. Procedury: `aftercare`, `viewTreatments`.
+- Skin report: `skinStats`, `reportPromptBase`, `runReport`, `renderReport`, wishlist (`wishAdd`, `wishBuy`).
+- Vlasy: `hairProducts`, `washInfo`, `washInterval`, `viewHairProducts`, sekce „vlasy“ ve `viewToday`.
+- API `api/ean.js` zůstává, ale sken čárového kódu je z UI odstraněný (na přání).
+
 ## Roadmapa (nápady)
+0. Automatické produktové fotky k doporučením ze skin reportu (Open Beauty Facts → image search API), uložit do Storage.
+0. Doporučení střídaných krémů podle skutečné teploty (Open-Meteo `temperature_2m`).
 1. Selfie přesunout z `days.data` do Supabase Storage (privátní bucket) – šetří databázi.
 2. Push notifikace (PWA na iOS 16.4+ po přidání na plochu) pro rutinu a procedury.
 3. Rozdělit `index.html` na moduly, přidat testy pro `analyzeSlot`, `detectActives`, `cycleInfo`.
