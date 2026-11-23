@@ -941,7 +941,7 @@ function pulseData(dates,logged){const t=todayStr();const n=dates.length;const p
   if(free>=3)badges.push(free+' dní bez potíží');
   const wavg=off=>{const a2=[];for(let i=off;i<off+7;i++){const x=S.days[addDays(t,-i)];if(x&&x.condition)a2.push(x.condition);}return a2.length>=4?a2.reduce((p,q)=>p+q,0)/a2.length:null;};
   const cur=wavg(0);if(cur!=null){let best=true,cmp=0;for(let o=7;o<=84;o+=7){const w=wavg(o);if(w!=null){cmp++;if(w>=cur)best=false;}}if(best&&cmp>=2)badges.push('Nejlepší týden za 3 měsíce');}
-  let sched=0,done=0;dates.forEach(d=>{['am','pm'].forEach(sl=>{const it=routineItems(d,sl);const dd=(S.days[d]||{})[sl]||{};sched+=it.length;done+=it.filter(x=>x.p?dd[x.p.id]:x.g.alts.some(p=>dd[p.id])).length;});});
+  let sched=0,done=0;const fr=firstRoutineDate();dates.forEach(d=>{if(!fr||d<fr)return;['am','pm'].forEach(sl=>{const it=routineItems(d,sl);const dd=(S.days[d]||{})[sl]||{};sched+=it.length;done+=it.filter(x=>x.p?dd[x.p.id]:x.g.alts.some(p=>dd[p.id])).length;});});
   if(sched&&done/sched>=0.8)badges.push('Rutina '+Math.round(done/sched*100)+' %');
   const ci=cycleInfo(t);if(ci&&ci.phase)badges.push(PHASES[ci.phase].l);
   return{a,delta,head,sub,badges};}
@@ -952,6 +952,8 @@ function pulseCard(dates,logged){if(!logged.length)return'';const p=pulseData(da
     (p.badges.length?'<div class="chips" style="justify-content:center;margin-top:18px">'+p.badges.map(b=>'<span class="chip" style="background:#fff">✦ '+esc(b)+'</span>').join('')+'</div>':'')+
     (showAi?'<div style="text-align:left;background:#fff;padding:16px 18px;margin-top:20px"><div class="small" style="font-weight:600;margin-bottom:6px">Claude</div><p style="font-family:var(--serif);font-size:19px;line-height:1.35;margin:0">'+esc(pl.text)+'</p></div>':'<button class="btn dark" style="margin-top:20px" data-act="pulseMore">Řekni víc</button>')+
     '</div></div>';}
+// První den, kdy je v deníku zaškrtnutý aspoň jeden krok rutiny – dny předtím se do plnění rutiny nepočítají.
+function firstRoutineDate(){let f=null;for(const [k,x] of Object.entries(S.days)){if(x&&(Object.values(x.am||{}).some(Boolean)||Object.values(x.pm||{}).some(Boolean))&&(!f||k<f))f=k;}return f;}
 function skinScore(date){const d=S.days[date]||{};const prevD=S.days[addDays(date,-1)]||{};let prov=false;const F=[];let sc=0;
   // stav pleti 30
   let cond=d.condition;if(!cond){prov=true;const a=[1,2,3].map(i=>S.days[addDays(date,-i)]).filter(x=>x&&x.condition).map(x=>x.condition);cond=a.length?a.reduce((p,q)=>p+q,0)/a.length:3;}
@@ -963,7 +965,7 @@ function skinScore(date){const d=S.days[date]||{};const prevD=S.days[addDays(dat
   // stres 10
   const st=d.stress||null;sc+=st?[0,10,8,6,3,1][st]:6;F.push(['Stres',st?['','Žádný','Nízký','Střední','Vysoký','Extrémní'][st]:'—']);
   // rutina 15 (poslední 3 dny)
-  let sch=0,dn=0;for(let i=0;i<3;i++){const x=addDays(date,-i);['am','pm'].forEach(sl2=>{const it=routineItems(x,sl2);const dd=(S.days[x]||{})[sl2]||{};if(i===0&&sl2==='pm'&&new Date().getHours()<18&&x===todayStr())return;if(i===0&&sl2==='am'&&!it.some(z=>z.p?dd[z.p.id]:z.g.alts.some(p=>dd[p.id]))&&x===todayStr())return;sch+=it.length;dn+=it.filter(z=>z.p?dd[z.p.id]:z.g.alts.some(p=>dd[p.id])).length;});}
+  let sch=0,dn=0;const fr=firstRoutineDate();for(let i=0;i<3;i++){const x=addDays(date,-i);if(!fr||x<fr)continue;['am','pm'].forEach(sl2=>{const it=routineItems(x,sl2);const dd=(S.days[x]||{})[sl2]||{};if(i===0&&sl2==='pm'&&new Date().getHours()<18&&x===todayStr())return;if(i===0&&sl2==='am'&&!it.some(z=>z.p?dd[z.p.id]:z.g.alts.some(p=>dd[p.id]))&&x===todayStr())return;sch+=it.length;dn+=it.filter(z=>z.p?dd[z.p.id]:z.g.alts.some(p=>dd[p.id])).length;});}
   const ad=sch?dn/sch:0.6;sc+=ad*15;F.push(['Rutina',sch?(ad>=0.8?'Pravidelná':ad>=0.5?'Občas vynechaná':'Vynechaná'):'—']);
   // ochrana 5
   const spf=activeProducts().some(p=>p.am&&actOf(p).has('spf'));const ac=aftercare(date);let prot=spf?5:1;if(ac.length){const strong=['am','pm'].flatMap(x=>effectiveFor(date,x)).some(p=>[...actOf(p)].some(k=>STRONG.includes(k)));if(strong)prot=Math.max(0,prot-3);}sc+=prot;
