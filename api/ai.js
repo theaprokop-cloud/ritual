@@ -1,11 +1,15 @@
 // POST /api/ai  { prompt: string, images?: [{ media_type, data(base64) }] }
 // Pošle dotaz Claudovi přes Anthropic API a vrátí { text }.
 // Každý uživatel má denní limit (AI_DAILY_LIMIT), počítá se v tabulce ai_usage.
+// E-maily v AI_UNLIMITED_EMAILS (oddělené čárkou) limit nemají.
 
 import { getUser, admin, deny } from './_lib.js';
 
 const LIMIT = parseInt(process.env.AI_DAILY_LIMIT || '10', 10);
 const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5';
+const UNLIMITED = new Set(
+  (process.env.AI_UNLIMITED_EMAILS || '').split(',').map((e) => e.trim().toLowerCase()).filter(Boolean)
+);
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return deny(res, 405, 'Method not allowed');
@@ -19,13 +23,16 @@ export default async function handler(req, res) {
   if (!Array.isArray(images) || images.length > 3)
     return deny(res, 400, 'Maximálně 3 obrázky.');
 
-  // Denní limit (atomicky v databázi)
+  // Denní limit (atomicky v databázi). Neomezené účty limit přeskočí.
+  const unlimited = !!user.email && UNLIMITED.has(String(user.email).toLowerCase());
   const day = new Date().toISOString().slice(0, 10);
-  const lr = await admin('/rest/v1/rpc/ai_use', {
+  const lr = unlimited ? null : await admin('/rest/v1/rpc/ai_use', {
     method: 'POST',
     body: JSON.stringify({ p_user: user.id, p_day: day, p_limit: LIMIT }),
   });
-  if (lr.ok) {
+  if (unlimited) {
+    // bez limitu
+  } else if (lr.ok) {
     const allowed = await lr.json();
     if (allowed === false)
       return deny(res, 429, `Dnešní limit AI (${LIMIT}×) je vyčerpaný. Zítra zase.`);
