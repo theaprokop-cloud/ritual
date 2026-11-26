@@ -1008,11 +1008,25 @@ function forecastData(t){
   if(uv.peak>=3&&spfAm&&PD.length<1)PD.push('SPF a obnovit kolem poledne');
   const seed=[...t].reduce((a,c)=>(a*31+c.charCodeAt(0))|0,7);const rot=(arr,k)=>arr.map((_,i)=>arr[(i+Math.abs(seed+k))%arr.length]);
   PD.forEach(x=>add(DO,x));
-  // DON'T – max 2 pro pleť (pravidla); když nic, jeden obecný; 1 lifestyle „out“ doplní lifeOut()
+  // + 1 praktický tip podle dnešní situace (nebo obecný), denně obměňovaný
+  const LS=[];const cold=wx&&wx.max<=3;
+  if(cold)LS.push('Šálu přes nos a tváře, mráz pálí');
+  if(dry)LS.push('Misku s vodou nebo zvlhčovač k topení','Krém i na rty, ne jen na tvář');
+  if(sleep!=null&&sleep<6.5)LS.push('Večer dřív do postele','Na 10 minut ven na denní světlo');
+  if(stress&&stress>=4)LS.push('5 minut masáže obličeje před spaním','Večer bez telefonu v posteli');
+  if(ph==='menstruace')LS.push('Teplý čaj a víc odpočinku');
+  if(ph==='pozdni'||conc.has('akne'))LS.push('Čistý povlak na polštář','Otři displej telefonu');
+  if(ph==='ovulace')LS.push('Lehčí make-up, ať pleť dýchá');
+  if(ph==='folikularni')LS.push('Dobrý týden vyzkoušet novinku');
+  if(uv.peak>=3)LS.push('Sluneční brýle – šetří kůži kolem očí');
+  if(!d.condition)LS.push('Večer zapiš, jak se pleť má');
+  const LG=['Odlič se, i když se večer nechce','Krém i na krk a dekolt','Sklenici vody hned po probuzení','Při nanášení krému minutu masáže','Vlasy z obličeje na noc','Ruce pryč od obličeje','Čistý ručník jen na obličej','Krém na ještě vlhkou pleť'];
+  [...(LS.length?rot(LS,0):[]),...rot(LG,3)].slice(0,1).forEach(x=>add(DO,x));
+  // DON'T – 2 pro pleť (pravidla, doplněné praktickými tipy); 1 lifestyle „out“ doplní lifeOut()
   DONT.splice(2);
-  const LDS=[];if(dry)LDS.push('Sedět přímo u topení');if(stress&&stress>=4)LDS.push('Zkoušet dnes nové produkty');
+  const LDS=[];if(dry)LDS.push('Sedět přímo u topení');if(sleep!=null&&sleep<6.5)LDS.push('Kafe po druhé odpoledne');if(stress&&stress>=4)LDS.push('Zkoušet dnes nové produkty');
   const LDG=['Spát v make-upu (ani „jen dnes“)','Drhnout obličej ručníkem','Pět novinek najednou','Opírat bradu o dlaň'];
-  [...rot(LDS,1),...rot(LDG,5)].forEach(x=>{if(DONT.length<1)add(DONT,x);});
+  [...(LDS.length?rot(LDS,1):[]),...rot(LDG,5)].forEach(x=>{if(DONT.length<2)add(DONT,x);});
   // PROČ
   if(ph)WHY.push(['◐',PHASES[ph].l+' · '+ci.day+'. den',PHASES[ph].t]);
   if(wx)WHY.push(['≋',wx.max+' °C'+(wx.hum!=null?', vlhkost '+wx.hum+' %':''),dry?'Suchý nebo studený vzduch bere pleti vodu – víc hydratace, šetrné čištění.':'Počasí pleť dnes nijak zvlášť nezatěžuje.']);
@@ -1093,7 +1107,7 @@ function forecastCard(){const t=todayStr();if(rDate()!==t)return'';
   const chips=[f.ph?PHASES[f.ph].l.toLowerCase():'',f.wx?f.wx.max+' °C':'',f.wx&&f.wx.hum!=null?'vlhkost '+f.wx.hum+' %':'',f.sleep!=null?'spánek '+nf(f.sleep)+' h':''].filter(Boolean);
   const item=x=>typeof x==='string'?'<p style="margin:0 0 8px;font-size:14px;line-height:1.35">'+esc(x)+'</p>':'<p style="margin:0 0 8px;font-size:14px;line-height:1.35">'+(LIFE[x.k]?'<span class="tiny muted" style="display:block">'+esc(LIFE[x.k])+'</span>':'')+''+esc(x.t)+'</p>';
   const col=(h,arr,c)=>'<div><div style="font:600 12px var(--sans);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px'+(c?';color:'+c:'')+'">'+h+'</div>'+(arr.length?arr.map(item).join(''):'<p class="small muted" style="margin:0">Nic zvláštního.</p>')+'</div>';
-  const DOx=[...f.DO.slice(0,1),...lifeTips(t)];
+  const DOx=[...f.DO.slice(0,2),...lifeTips(t)];
   return'<div class="section"><div style="background:var(--paper);padding:20px 20px 18px">'+
     '<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">tvoje pleť dnes</div><button class="link" data-act="fcWhy">Proč?</button></div>'+
     '<div style="font-family:var(--serif);font-size:25px;line-height:1.22;margin:10px 0 14px">'+fcMd(text)+'</div>'+
