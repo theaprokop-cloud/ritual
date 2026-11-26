@@ -1008,10 +1008,11 @@ function forecastData(t){
   if(uv.peak>=3&&spfAm&&PD.length<1)PD.push('SPF a obnovit kolem poledne');
   const seed=[...t].reduce((a,c)=>(a*31+c.charCodeAt(0))|0,7);const rot=(arr,k)=>arr.map((_,i)=>arr[(i+Math.abs(seed+k))%arr.length]);
   PD.forEach(x=>add(DO,x));
-  // DON'T – doplnit tipy mimo produkty, ať jsou aspoň 2
-  const LDS=[];if(dry)LDS.push('Sedět přímo u topení');if(sleep!=null&&sleep<6.5)LDS.push('Kafe po druhé odpoledne');if(stress&&stress>=4)LDS.push('Zkoušet dnes nové produkty');
-  const LDG=['Spát v make-upu','Drhnout obličej ručníkem','Víc novinek najednou','Opírat bradu o dlaň'];
-  [...rot(LDS,1),...rot(LDG,5)].forEach(x=>{if(DONT.length<2)add(DONT,x);});
+  // DON'T – max 2 pro pleť (pravidla); když nic, jeden obecný; 1 lifestyle „out“ doplní lifeOut()
+  DONT.splice(2);
+  const LDS=[];if(dry)LDS.push('Sedět přímo u topení');if(stress&&stress>=4)LDS.push('Zkoušet dnes nové produkty');
+  const LDG=['Spát v make-upu (ani „jen dnes“)','Drhnout obličej ručníkem','Pět novinek najednou','Opírat bradu o dlaň'];
+  [...rot(LDS,1),...rot(LDG,5)].forEach(x=>{if(DONT.length<1)add(DONT,x);});
   // PROČ
   if(ph)WHY.push(['◐',PHASES[ph].l+' · '+ci.day+'. den',PHASES[ph].t]);
   if(wx)WHY.push(['≋',wx.max+' °C'+(wx.hum!=null?', vlhkost '+wx.hum+' %':''),dry?'Suchý nebo studený vzduch bere pleti vodu – víc hydratace, šetrné čištění.':'Počasí pleť dnes nijak zvlášť nezatěžuje.']);
@@ -1035,9 +1036,9 @@ function forecastRuleText(f,tone){const H=tone==='hravy';
   if(f.ph==='ovulace')return H?'Pleť dnes září sama od sebe. *Nepřeháněj to s vrstvami.*':'Pleť bývá teď zářivá. Stačí *lehčí textury*.';
   return H?'Žádné drama na obzoru. *Drž rutinu a pleť ti poděkuje.*':'Klidný den. Pravidelná rutina je dnes to *nejlepší, co pro pleť uděláš*.';}
 const fcMd=s=>esc(s).replace(/\*([^*]+)\*/g,'<em>$1</em>');
-function fcSig(f){return['v2',fcTone(),f.wx?1:0,f.ph||'',f.d.condition?1:0,f.d.sleep!=null?1:0,f.iss.length,f.ac.length,f.dry?1:0].join('|');}
+function fcSig(f){return['v3',fcTone(),f.wx?1:0,f.ph||'',f.d.condition?1:0,f.d.sleep!=null?1:0,f.iss.length,f.ac.length,f.dry?1:0].join('|');}
 /* Tipy mimo produkty: 2 kategorie denně (střídají se podle data). Píše je Claude spolu s předpovědí, záloha níž. */
-const LIFE={jidlo:'Jídlo',doplnek:'Doplněk',mindfulness:'Mindfulness',wellness:'Wellness',serial:'Seriál',kniha:'Kniha',podcast:'Podcast',pohyb:'Pohyb'};
+const LIFE={jidlo:'Jídlo',navyk:'Návyk',doplnek:'Doplněk',mindfulness:'Mindfulness',offline:'Offline',wellness:'Wellness',serial:'Seriál',lide:'Lidi',kniha:'Kniha',podcast:'Podcast',pohyb:'Pohyb'};
 const LIFE_FB={
  jidlo:['Hrst vlašských ořechů ke svačině – omega-3 pro pleťovou bariéru','Pečená dýně nebo mrkev – beta-karoten pro zdravý tón pleti','Kiwi nebo červená paprika – vitamin C pomáhá tvorbě kolagenu','Avokádový toast – zdravé tuky hydratují zevnitř','Zelený čaj místo třetího kafe','Kefír nebo kysané zelí – dobré pro střeva i pleť','Losos nebo sardinky k večeři – omega-3','Miso polévka na zahřátí a pro střeva'],
  doplnek:['Zvaž vitamin D – v zimě ho má málo většina z nás','Zvaž omega-3 – suchá pleť je za ně vděčná','Při pupíncích zvaž zinek – nejdřív se poraď v lékárně','Vitamin C radši z jídla – kiwi, paprika, citrusy','Zvaž probiotika, pokud zlobí i bříško – zeptej se v lékárně'],
@@ -1046,11 +1047,16 @@ const LIFE_FB={
  serial:['Fleabag – krátké díly, velký smích','The Bear – na jeden zátah, pak si dej dobrou večeři','Emily in Paris – lehké a pastelové, ideální k masce','Gilmorova děvčata – comfort rewatch s čajem','Abbott Elementary – 20 minut dobré nálady','Normal People – dojemné, připrav kapesníky'],
  kniha:['Půlnoční knihovna (Matt Haig) – útěšná zimní četba','Atomové návyky (James Clear) – jak udržet rutinu','Ikigai – japonský recept na smysluplný život','Proč spíme (Matthew Walker) – motivace jít dřív spát','Hygge (Meik Wiking) – jak si udělat zimu útulnou','Krásný světe, kde jsi (Sally Rooney)'],
  podcast:['Huberman Lab – díl o spánku','Ten Percent Happier – meditace pro skeptiky','Radiolab – zvědavé příběhy na procházku','Vinohradská 12 – na cestu do práce','The Mel Robbins Podcast – krátké dávky motivace'],
+ navyk:['Telefon na noc do jiné místnosti (nebo do jiného PSČ)','Jedna věc najednou. Fakt jen jedna','10 minut na tu věc, kterou odkládáš. Pak uvidíš','Ustlat do 5 minut po probuzení – první výhra dne','Začít teď a učit se za pochodu'],
+ offline:['Hodina bez displeje před spaním','Papírový deník místo poznámek v mobilu','Kniha z knihovny místo dalšího dílu','Procházka bez sluchátek a bez cíle','Večer s vypnutými notifikacemi'],
+ lide:['Napiš kamarádce, na kterou zrovna myslíš','Domácí večeře pro pár lidí, nic složitého','Zavolej místo hlasovky','Pravidelný sraz: knižní klub, kvíz, běh','Pochval dnes někoho nahlas'],
  pohyb:['20 minut svižné chůze – prokrvení dodá pleti barvu','10 minut jógy: kočka–kráva a předklony','Protáhni krk a ramena u počítače – méně napětí v obličeji','Jedna písnička tance v kuchyni','Schody místo výtahu','Večerní strečink 5 minut před spaním']};
+const LIFE_OUT=['Scrollovat v posteli s maskou na obličeji','Čekat na perfektní moment (nepřijde)','Multitasking (neumíš to, nikdo to neumí)','Čtyři hodiny screen time denně (au)','Otevřít Instagram 6× za 3 minuty','„Udělám to, až budu mít víc času“','Srovnávat svou pleť s filtrem','Kupovat pátou novinku, než dojdou ty staré','Odkládat spánek kvůli „ještě jednomu dílu“','Být pořád k zastižení'];
 const dayIdx=t=>Math.floor(parseYmd(t).getTime()/864e5);
 function lifeCats(t){const d=S.days[t]||{};const L=Object.keys(LIFE).filter(k=>!(k==='doplnek'&&String(d.meds||'').trim()));const i=dayIdx(t);const a=L[i%L.length];let b=L[(i+3)%L.length];if(b===a)b=L[(i+1)%L.length];return[a,b];}
-function recentTips(t){const out=[];for(let i=1;i<=14;i++){const x=S.days[addDays(t,-i)];((x&&x.forecast&&x.forecast.tips)||[]).forEach(z=>z&&z.t&&out.push(z.t));}return out;}
+function recentTips(t){const out=[];for(let i=1;i<=14;i++){const x=S.days[addDays(t,-i)];const fc=x&&x.forecast;((fc&&fc.tips)||[]).forEach(z=>z&&z.t&&out.push(z.t));if(fc&&fc.out)out.push(fc.out);}return out;}
 function lifeFallback(k,t,off){const pool=LIFE_FB[k]||LIFE_FB.wellness;const rec=new Set(recentTips(t));const i=dayIdx(t)+(off||0);for(let j=0;j<pool.length;j++){const x=pool[(i+j)%pool.length];if(!rec.has(x))return{k,t:x};}return{k,t:pool[i%pool.length]};}
+function lifeOut(t){const fc=(S.days[t]||{}).forecast;if(fc&&typeof fc.out==='string'&&fc.out.trim())return fc.out;const rec=new Set(recentTips(t));const i=dayIdx(t)*3;for(let j=0;j<LIFE_OUT.length;j++){const x=LIFE_OUT[(i+j)%LIFE_OUT.length];if(!rec.has(x))return x;}return LIFE_OUT[i%LIFE_OUT.length];}
 function lifeTips(t){const cats=lifeCats(t);const fc=(S.days[t]||{}).forecast;const got=(fc&&Array.isArray(fc.tips))?fc.tips:[];
   return cats.map((k,n)=>got.find(x=>x&&x.k===k&&x.t)||lifeFallback(k,t,n*5));}
 async function genForecast(t){if(fcBusy)return;const f=forecastData(t);const d=getDay(t);const sig=fcSig(f);
@@ -1063,11 +1069,15 @@ async function genForecast(t){if(fcBusy)return;const f=forecastData(t);const d=g
       (tone==='hravy'?'Tón: hravý, vtipný, trochu drzý, jako horoskopová appka Co-Star – ale nikdy zlý ani zesměšňující.':'Tón: jemný, pečující, laskavý a uklidňující.')+
       ' Max 2 krátké věty, celkem do 170 znaků. Jednu krátkou frázi zvýrazni hvězdičkami *takto*. Nevypisuj seznam rad (Do/Don\'t má appka zvlášť), nejmenuj produkty, nic nevymýšlej mimo uvedená data, žádné diagnózy.'+
       '\n\nDATA NA DNES: '+[f.ph?'fáze cyklu: '+PHASES[f.ph].l:'',f.wx?'počasí: '+f.wx.min+' až '+f.wx.max+' °C'+(f.wx.hum!=null?', vlhkost '+f.wx.hum+' %':''):'',f.dry?'suchý vzduch':'',f.sleep!=null?'spánek '+f.sleep+' h':'',f.stress?'stres '+f.stress+'/5':'',f.d.condition?'stav pleti: '+CONDNAME[f.d.condition]:'',f.conc.size?'řeší: '+[...f.conc].map(c=>CONCERNS[c]).filter(Boolean).join(', '):'',f.ac.length?'po kosmetickém zákroku, ještě '+f.ac[0].left+' dní šetrně':'',f.iss.length?'v rutině je dráždivá kombinace látek':'','UV max '+Math.round(f.uv.peak),'typ pleti: '+(SKINTYPE[pr.skinType]||'neuveden'),((pr.words||[]).filter(Boolean).length?'její 3 beauty slova: '+pr.words.filter(Boolean).join(', '):'')].filter(Boolean).join('; ')+
-      '\n\nK tomu napiš PŘESNĚ 2 tipy mimo kosmetiku: první z kategorie „'+LIFE[cats[0]]+'“ ('+cats[0]+'), druhý z kategorie „'+LIFE[cats[1]]+'“ ('+cats[1]+'). Každý max 80 znaků, konkrétní a ideálně navázaný na dnešní data (počasí, fáze, spánek, stres) nebo její beauty slova. U seriálu, filmu, knihy a podcastu uveď skutečný existující název (ideálně dostupný v Česku) a půl věty proč. U doplňků stravy jen obecně známé věci bez dávkování, formuluj jako „zvaž“. Ve stejném tónu jako text. Neopakuj tyhle nedávné tipy: '+(recent.length?recent.join(' | '):'žádné')+
-      '\n\nOdpověz POUZE validním JSON: {"text":"...","tips":[{"k":"'+cats[0]+'","t":"..."},{"k":"'+cats[1]+'","t":"..."}]}';
+      '\n\nK tomu napiš PŘESNĚ 2 tipy „Do“ mimo kosmetiku: první z kategorie „'+LIFE[cats[0]]+'“ ('+cats[0]+'), druhý z kategorie „'+LIFE[cats[1]]+'“ ('+cats[1]+'). A 1 lifestyle „Don\'t“ (out) – ideálně jako vtipný protějšek jednoho z Do. '+
+      'STYL Do/Don\'t: jako lifestylové IN/OUT příspěvky na Instagramu („things to do and not do in 2026“, The Everygirl): krátké, úderné, s názorem, ze života – návyky, telefon a screen time, spánek, procházky, deník, přátelé, jídlo, kultura, offline radosti. '+
+      (tone==='hravy'?'Klidně přidej krátkou vtipnou poznámku v závorce, např. „(nepřijde)“, „(fakt)“, „(au)“. Příklady: Do „Telefon na noc do jiné místnosti (nebo do jiného PSČ)“, Don\'t „Multitasking (neumíš to, nikdo to neumí)“. ':'Laskavě, bez sarkasmu. Příklady: Do „Hodina bez displeje před spaním“, Don\'t „Čekat na perfektní moment, stačí začít“. ')+
+      'Žádné moralizování, diety ani body-shaming. Každý max 80 znaků, konkrétní a ideálně navázaný na dnešní data (počasí, fáze, spánek, stres) nebo její beauty slova. U seriálu, filmu, knihy a podcastu uveď skutečný existující název (ideálně dostupný v Česku) a půl věty proč. U doplňků stravy jen obecně známé věci bez dávkování, formuluj jako „zvaž“. Ve stejném tónu jako text. Neopakuj tyhle nedávné tipy: '+(recent.length?recent.join(' | '):'žádné')+
+      '\n\nOdpověz POUZE validním JSON: {"text":"...","tips":[{"k":"'+cats[0]+'","t":"..."},{"k":"'+cats[1]+'","t":"..."}],"out":"..."}';
     const v=await askJSON(prompt);const txt=String(v&&v.text||'').trim().slice(0,240);
     const tips=(Array.isArray(v&&v.tips)?v.tips:[]).filter(x=>x&&cats.includes(x.k)&&typeof x.t==='string'&&x.t.trim()).map(x=>({k:x.k,t:x.t.trim().slice(0,120)})).slice(0,2);
-    d.forecast={text:txt||forecastRuleText(f,tone),tips,src:txt?'ai':'rules',sig,tone,n,at:new Date().toISOString()};
+    const out=typeof(v&&v.out)==='string'?v.out.trim().slice(0,120):'';
+    d.forecast={text:txt||forecastRuleText(f,tone),tips,out,src:txt?'ai':'rules',sig,tone,n,at:new Date().toISOString()};
   }catch(e){d.forecast={text:forecastRuleText(f,tone),src:'rules',sig,tone,n:3,at:new Date().toISOString()};}
   fcBusy=false;saveDay(t,true);if(tab==='dnes'&&rDate()===todayStr())render();}
 function streakInfo(){const t=todayStr();const on=x=>x&&(Object.values(x.am||{}).some(Boolean)||Object.values(x.pm||{}).some(Boolean));
@@ -1081,14 +1091,14 @@ function forecastCard(){const t=todayStr();if(rDate()!==t)return'';
   if(!fc&&!fcBusy&&wxTried)setTimeout(()=>genForecast(t),0);
   const text=fc?fc.text:(d.forecast&&d.forecast.tone===tone?d.forecast.text:forecastRuleText(f,tone));
   const chips=[f.ph?PHASES[f.ph].l.toLowerCase():'',f.wx?f.wx.max+' °C':'',f.wx&&f.wx.hum!=null?'vlhkost '+f.wx.hum+' %':'',f.sleep!=null?'spánek '+nf(f.sleep)+' h':''].filter(Boolean);
-  const item=x=>typeof x==='string'?'<p style="margin:0 0 8px;font-size:14px;line-height:1.35">'+esc(x)+'</p>':'<p style="margin:0 0 8px;font-size:14px;line-height:1.35"><span class="tiny muted" style="display:block">'+esc(LIFE[x.k]||'')+'</span>'+esc(x.t)+'</p>';
+  const item=x=>typeof x==='string'?'<p style="margin:0 0 8px;font-size:14px;line-height:1.35">'+esc(x)+'</p>':'<p style="margin:0 0 8px;font-size:14px;line-height:1.35">'+(LIFE[x.k]?'<span class="tiny muted" style="display:block">'+esc(LIFE[x.k])+'</span>':'')+''+esc(x.t)+'</p>';
   const col=(h,arr,c)=>'<div><div style="font:600 12px var(--sans);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px'+(c?';color:'+c:'')+'">'+h+'</div>'+(arr.length?arr.map(item).join(''):'<p class="small muted" style="margin:0">Nic zvláštního.</p>')+'</div>';
   const DOx=[...f.DO.slice(0,1),...lifeTips(t)];
   return'<div class="section"><div style="background:var(--paper);padding:20px 20px 18px">'+
     '<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">tvoje pleť dnes</div><button class="link" data-act="fcWhy">Proč?</button></div>'+
     '<div style="font-family:var(--serif);font-size:25px;line-height:1.22;margin:10px 0 14px">'+fcMd(text)+'</div>'+
     (chips.length?'<div class="chips" style="margin-bottom:14px;gap:6px">'+chips.map(c=>'<span class="chip" style="background:#fff;padding:7px 12px;font-size:13px">'+esc(c)+'</span>').join('')+'</div>':'')+
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;border-top:1px solid var(--line);padding-top:14px">'+col('Do',DOx)+col("Don't",f.DONT,'var(--accent)')+'</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;border-top:1px solid var(--line);padding-top:14px">'+col('Do',DOx)+col("Don't",[...f.DONT,{k:'zivot',t:lifeOut(t)}],'var(--accent)')+'</div>'+
     '</div></div>';}
 function forecastWhyHtml(){const f=forecastData(todayStr());
   return'<div>'+f.WHY.map(([i,tt,sub])=>'<div class="row" style="cursor:default"><div style="width:30px;font-size:20px;text-align:center;flex:none">'+esc(i)+'</div><div class="grow"><div class="title">'+esc(tt)+'</div><div class="sub" style="white-space:normal">'+esc(sub)+'</div></div></div>').join('')+'</div>'+
