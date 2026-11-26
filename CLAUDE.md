@@ -20,9 +20,9 @@ Osobní skincare deník (uzavřená beta, vlastní projekt Thei). UI je **česky
 
 ## Datový model
 Každá tabulka ukládá dokument v `data jsonb`, struktura odpovídá objektům v JS:
-- profil: `name, gender, skinType, sens, concerns[], words[], goals, allergies[], allergyText, city, cycleOn, periodStarts[], cycleLen, periodLen, consentAt, onboarded, routineAi, skinReport{at,n,data}, wishlist[], hairOn, hairType, scalp, hairFlags[], washFreq, hairAvoid[]`
+- profil: `name, gender, skinType, sens, concerns[], words[], goals, allergies[], allergyText, city, cycleOn, periodStarts[], cycleLen, periodLen, consentAt, onboarded, routineAi, skinReport{at,n,data}, wishlist[], hairOn, hairType, scalp, hairFlags[], washFreq, hairAvoid[], fcTone(hravy|jemny), guide{}`
 - produkt: `id, area(skin|hair), name, brand, category, ean, url, ingredients, ingSource, actives[], am, pm, any, stepAm, stepPm, when[], freq{type:daily|days|interval|asneeded, days[], every, start}, goal, hw(wash|extra|daily – jen vlasy), opened, pao, expiry, weeks, low, archived, photo, notes`
-- den: `date, am{pid:true}, pm{}, extra{}, pick{am:{krok:pid}}, hair{pid:true}, washMark, noWash, washPlan, hairState[], condition 1–5, concerns[], sleep, stress, food[], activity[], env[], meds, notes, selfie(dataURL), ai{}, dismissed[]`
+- den: `date, am{pid:true}, pm{}, extra{}, pick{am:{krok:pid}}, hair{pid:true}, washMark, noWash, washPlan, hairState[], condition 1–5, concerns[], sleep, stress, food[], activity[], env[], meds, notes, selfie(dataURL), ai{}, forecast{text,tips[{k,t}],out,src(ai|rules),sig,tone,n,at}, dismissed[]`
 - procedura: `id, type, custom, date, time, place, price, pause, reaction, notes, repeat`
 
 ## Pravidla
@@ -38,6 +38,7 @@ Každá tabulka ukládá dokument v `data jsonb`, struktura odpovídá objektům
 - Střídané kroky rutiny: `routineItems`, `suggestAlt`, `currentAlt`, akce `altDone`/`altOpen`/`altPick`.
 - Kontroly: `analyzeSlot` (konflikty látek), `allergyHits`, `hairAvoidHits`, `inciItems`/`inciHas`.
 - Cyklus: `periodStarts`, `cycleLength`, `cycleInfo`. Procedury: `aftercare`, `viewTreatments`.
+- Denní předpověď (nahradila Skin Score): `forecastData` (Do/Don't + „Proč?“ = pravidla), `genForecast` (text od Clauda max 3× denně, cache v `days.forecast`, při chybě `forecastRuleText`), `forecastCard`, `streakInfo`. Do = max 1 tip s produktem + 1 praktický tip podle situace (`LS`/`LG` ve `forecastData`) + 2 lifestyle tipy (`lifeCats` střídá kategorie `LIFE` podle data, záloha `LIFE_FB`). Don't = 2 pro pleť (pravidla, doplněné `LDS`/`LDG`) + 1 lifestyle „out“ (`lifeOut`, záloha `LIFE_OUT`). Lifestyle tipy píše Claude spolu s předpovědí ve stylu IN/OUT příspěvků, neopakuje tipy z posledních 14 dní. Počasí: `fetchUV` → `uvLive.temp/hum`, `wxToday`.
 - Skin report: `skinStats`, `reportPromptBase`, `runReport`, `renderReport`, wishlist (`wishAdd`, `wishBuy`).
 - Vlasy: `hairProducts`, `washInfo`, `washInterval`, `viewHairProducts`, sekce „vlasy“ ve `viewToday`.
 - API `api/ean.js` zůstává, ale sken čárového kódu je z UI odstraněný (na přání).
